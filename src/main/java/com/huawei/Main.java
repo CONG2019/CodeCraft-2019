@@ -3,6 +3,8 @@ package huawei;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 
+import java.util.ArrayList;
+
 public class Main {
     private static final Logger logger = Logger.getLogger(Main.class);
     public static void main(String[] args)
@@ -26,6 +28,12 @@ public class Main {
         allRoad.Init(roadPath);
         AllCross allCross = new AllCross();
         allCross.Init(crossPath);
+
+        // 测试Graph
+        Graph graph = new Graph();
+        graph.Init(allCross, allRoad);
+        ArrayList<Road> adjCross1 = graph.Adj(1);
+        int a = graph.OutDegree(1);
         logger.info("carPath = " + carPath + " roadPath = " + roadPath + " crossPath = " + crossPath + " and answerPath = " + answerPath);
 
         // TODO:read input files
