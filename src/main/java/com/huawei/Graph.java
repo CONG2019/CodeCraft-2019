@@ -2,6 +2,7 @@ package huawei;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Set;
 
 // 用邻接表表示的图
 // 可以采用两种方案：第一种是采用hashmap，以路口即点的id作为key，value是该key出发的road。road由数组构成，分别是按照顺时针的方向的道路。
@@ -75,4 +76,10 @@ public class Graph {
     public ArrayList<Road> Adj(int v){
         return graph_.get(v);
     }
+
+    // 返回所有key
+    public Set<Integer> GetV(){
+        return graph_.keySet();
+    }
+
 }
