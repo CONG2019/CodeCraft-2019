@@ -35,6 +35,8 @@ public class Main {
         // 构造函数传入道路的信息
         BFSSolution bfsSolution = new BFSSolution(allRoad);
         bfsSolution.GetPaths(graph);
+        Scheduler scheduler = new Scheduler();
+        scheduler.SimpleSchedule(allCar, bfsSolution);
         // ArrayList<Road> adjCross1 = graph.Adj(1);
         // int a = graph.OutDegree(1);
         logger.info("carPath = " + carPath + " roadPath = " + roadPath + " crossPath = " + crossPath + " and answerPath = " + answerPath);

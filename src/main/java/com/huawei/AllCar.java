@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 
 public class AllCar {
@@ -35,6 +36,8 @@ public class AllCar {
                     carsMap_.put(oneCar.id_, oneCar);
                 }
             }
+            // 对车辆按照出发时间进行排序
+            //Collections.sort(cars_);
         }
         catch (Exception e){
             e.printStackTrace();

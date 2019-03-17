@@ -16,48 +16,52 @@ public class Graph {
          // 逐个路口读入，根据路口对应的roadId寻找road
         for (Cross cross: crosses.cross_) {
             // 根据cross的id和roadid来寻找路
-            // 需要注意单双向的问题，如果是单向的，需要是
+            // 需要注意单双向的问题，如果是单向的
             ArrayList<Road> road = new ArrayList<>();
             if(cross.roadId1_ != -1){
                 Road tmpRoad = roads.roadsMap_.get(cross.roadId1_);
-                if(tmpRoad.isDuplex_ == 1){
+                if(tmpRoad.from_ == cross.id_){
                     road.add(tmpRoad);
                 }
                 else{
-                    if(tmpRoad.from_ == cross.id_){
+                    if(tmpRoad.isDuplex_ == 1){
+                        tmpRoad = roads.roadsMap_.get(-cross.roadId1_);
                         road.add(tmpRoad);
                     }
                 }
             }
             if(cross.roadId2_ != -1){
                 Road tmpRoad = roads.roadsMap_.get(cross.roadId2_);
-                if(tmpRoad.isDuplex_ == 1){
+                if(tmpRoad.from_ == cross.id_){
                     road.add(tmpRoad);
                 }
                 else{
-                    if(tmpRoad.from_ == cross.id_){
+                    if(tmpRoad.isDuplex_ == 1){
+                        tmpRoad = roads.roadsMap_.get(-cross.roadId2_);
                         road.add(tmpRoad);
                     }
                 }
             }
             if(cross.roadId3_ != -1){
                 Road tmpRoad = roads.roadsMap_.get(cross.roadId3_);
-                if(tmpRoad.isDuplex_ == 1){
+                if(tmpRoad.from_ == cross.id_){
                     road.add(tmpRoad);
                 }
                 else{
-                    if(tmpRoad.from_ == cross.id_){
+                    if(tmpRoad.isDuplex_ == 1){
+                        tmpRoad = roads.roadsMap_.get(-cross.roadId3_);
                         road.add(tmpRoad);
                     }
                 }
             }
             if(cross.roadId4_ != -1){
                 Road tmpRoad = roads.roadsMap_.get(cross.roadId4_);
-                if(tmpRoad.isDuplex_ == 1){
+                if(tmpRoad.from_ == cross.id_){
                     road.add(tmpRoad);
                 }
                 else{
-                    if(tmpRoad.from_ == cross.id_){
+                    if(tmpRoad.isDuplex_ == 1){
+                        tmpRoad = roads.roadsMap_.get(-cross.roadId4_);
                         road.add(tmpRoad);
                     }
                 }

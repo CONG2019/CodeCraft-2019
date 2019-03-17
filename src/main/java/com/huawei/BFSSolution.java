@@ -45,7 +45,7 @@ public class BFSSolution {
         marked[source] = true;
         // 将起点的邻接边加入到队列
         for (Road road: graph.Adj(source)) {
-            queue.push(road);
+            queue.add(road);
             // 标记为已访问
             marked[road.to_] = true;
             edgeTo.put(road.id_, -1);
@@ -64,7 +64,7 @@ public class BFSSolution {
                     edgeTo.put(outRoad.id_, road.id_);
                     marked[tmp_to] = true;
                     // 推到queue中
-                    queue.push(outRoad);
+                    queue.add(outRoad);
                 }
             }
         }

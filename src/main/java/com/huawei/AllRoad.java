@@ -33,6 +33,18 @@ public class AllRoad {
                     Road oneRoad = new Road(road);
                     roads_.add(oneRoad);
                     roadsMap_.put(oneRoad.id_, oneRoad);
+                    // 如果存在双向道路的时候，新建一个-RoadId的道路，最后的时候还原即可。
+                    if(oneRoad.isDuplex_ == 1){
+                        Road anotherRoad = new Road(road);
+                        // 交换from和to
+                        int tmp = anotherRoad.from_;
+                        anotherRoad.from_ = anotherRoad.to_;
+                        anotherRoad.to_ = tmp;
+                        anotherRoad.id_ = -anotherRoad.id_;
+                        roads_.add(anotherRoad);
+                        roadsMap_.put(anotherRoad.id_, anotherRoad);
+                    }
+
                 }
             }
         }
