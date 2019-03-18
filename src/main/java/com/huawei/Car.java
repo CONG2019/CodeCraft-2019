@@ -1,4 +1,4 @@
-package huawei;
+package com.huawei;
 
 // car类实现Comparable接口，使得排序按照出发时间来进行。
 public class Car implements Comparable<Car> {

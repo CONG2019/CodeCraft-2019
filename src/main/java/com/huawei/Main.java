@@ -1,4 +1,4 @@
-package huawei;
+package com.huawei;
 
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
@@ -37,6 +37,7 @@ public class Main {
         bfsSolution.GetPaths(graph);
         Scheduler scheduler = new Scheduler();
         scheduler.SimpleSchedule(allCar, bfsSolution);
+        OutPut.WriteAnswer(scheduler, answerPath);
         // ArrayList<Road> adjCross1 = graph.Adj(1);
         // int a = graph.OutDegree(1);
         logger.info("carPath = " + carPath + " roadPath = " + roadPath + " crossPath = " + crossPath + " and answerPath = " + answerPath);

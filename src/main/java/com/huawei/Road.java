@@ -1,4 +1,4 @@
-package huawei;
+package com.huawei;
 
 public class Road {
     // 类型直接定义为public

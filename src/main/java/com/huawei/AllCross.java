@@ -1,4 +1,4 @@
-package huawei;
+package com.huawei;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;
@@ -33,6 +33,7 @@ public class AllCross {
                     crossMap_.put(oneCross.id_, oneCross);
                 }
             }
+            bufferedReader.close();
         } catch (Exception e) {
             e.printStackTrace();
         }

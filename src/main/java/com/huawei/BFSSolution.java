@@ -1,4 +1,4 @@
-package huawei;
+package com.huawei;
 
 import java.util.*;
 

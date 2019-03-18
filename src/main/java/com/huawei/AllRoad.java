@@ -1,4 +1,4 @@
-package huawei;
+package com.huawei;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;
@@ -44,9 +44,10 @@ public class AllRoad {
                         roads_.add(anotherRoad);
                         roadsMap_.put(anotherRoad.id_, anotherRoad);
                     }
-
                 }
             }
+            bufferedReader.close();
+            //inputStream.close();
         }
         catch (Exception e){
             e.printStackTrace();

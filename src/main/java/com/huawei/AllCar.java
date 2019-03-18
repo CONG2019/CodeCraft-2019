@@ -1,4 +1,4 @@
-package huawei;
+package com.huawei;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;
@@ -36,6 +36,8 @@ public class AllCar {
                     carsMap_.put(oneCar.id_, oneCar);
                 }
             }
+            bufferedReader.close();
+            inputStream.close();
             // 对车辆按照出发时间进行排序
             //Collections.sort(cars_);
         }
