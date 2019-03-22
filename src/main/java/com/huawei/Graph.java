@@ -1,6 +1,7 @@
 package com.huawei;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Set;
 
@@ -78,7 +79,11 @@ public class Graph {
 
     // 返回某个点的邻接边
     public ArrayList<Road> Adj(int v){
-        return graph_.get(v);
+        ArrayList<Road> result = graph_.get(v);
+        Collections.sort(result);
+        //Collections.shuffle(result);
+        //Collections.reverse(result);
+        return result;
     }
 
     // 返回所有key

@@ -19,6 +19,8 @@ public class Car implements Comparable<Car> {
     // 排序函数
     @Override
     public int compareTo(Car car) {
-        return planTime_-car.planTime_;
+       return planTime_-car.planTime_;
+        //return car.planTime_ - planTime_;
+        //return from_-car.from_;
     }
 }

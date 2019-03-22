@@ -17,19 +17,28 @@ public class Scheduler {
         Collections.sort(allCar.cars_);
         // 逐辆车进行调度，每个时间单位只走一个车
         int startTime = 1;
+        int count = 1;
         answer = new ArrayList<>();
         for (Car car: allCar.cars_
              ) {
             // 先保存车辆id和实际安排的出发时间
             ArrayList<Integer> carSchedule = new ArrayList<>();
             carSchedule.add(car.id_);
-            carSchedule.add(startTime);
+            carSchedule.add(Math.max(startTime, car.planTime_));
             // 根据每台车的起始点和终点查找路径
             carSchedule.addAll(bfsSolution.path_.get(car.from_).get(car.to_));
             // 下一台车在出发
-            ++startTime;
+            if(count == 18){
+                ++startTime;
+                count = 1;
+            }
+            ++count;
             answer.add(carSchedule);
         }
     }
+
+    /*
+       第二个方法：按照车的经过的路口不相交出发。
+     */
 }
 
