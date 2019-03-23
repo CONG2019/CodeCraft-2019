@@ -39,7 +39,8 @@ public class Main {
         dijkstra.GetShortPath(graph);
         Scheduler scheduler = new Scheduler();
         //scheduler.SimpleSchedule(allCar, bfsSolution.path_);
-        scheduler.SimpleSchedule(allCar, dijkstra.path_);
+        //scheduler.SimpleSchedule(allCar, dijkstra.path_);
+        scheduler.SameSourceSchedule(allCar, dijkstra.path_);
         OutPut.WriteAnswer(scheduler, answerPath);
         // ArrayList<Road> adjCross1 = graph.Adj(1);
         // int a = graph.OutDegree(1);
