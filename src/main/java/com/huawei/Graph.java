@@ -91,4 +91,8 @@ public class Graph {
         return graph_.keySet();
     }
 
+    public int GetVNumbers(){
+        return graph_.size();
+    }
+
 }

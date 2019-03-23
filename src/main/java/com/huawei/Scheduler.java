@@ -2,6 +2,7 @@ package com.huawei;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 
 // 调度器类，负责进行车辆的调度
 public class Scheduler {
@@ -12,7 +13,7 @@ public class Scheduler {
     /*
        第一个方法，每隔一秒放入一辆车，不考虑任何情况，在BFSSolution中寻找车辆起点到终点的方案。
      */
-    public void SimpleSchedule(AllCar allCar, BFSSolution bfsSolution){
+    public void SimpleSchedule(AllCar allCar, HashMap<Integer, HashMap<Integer, ArrayList<Integer>>> path){
         // 先对车辆按照触发时间进行排序
         Collections.sort(allCar.cars_);
         // 逐辆车进行调度，每个时间单位只走一个车
@@ -26,9 +27,9 @@ public class Scheduler {
             carSchedule.add(car.id_);
             carSchedule.add(Math.max(startTime, car.planTime_));
             // 根据每台车的起始点和终点查找路径
-            carSchedule.addAll(bfsSolution.path_.get(car.from_).get(car.to_));
+            carSchedule.addAll(path.get(car.from_).get(car.to_));
             // 下一台车在出发
-            if(count == 18){
+            if(count == 14){
                 ++startTime;
                 count = 1;
             }

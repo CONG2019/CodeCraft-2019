@@ -48,6 +48,7 @@ public class BFSSolution {
             queue.add(road);
             // 标记为已访问
             marked[road.to_] = true;
+            // 这里可能有问题，如果roadId出现了-1的时候
             edgeTo.put(road.id_, -1);
         }
 
