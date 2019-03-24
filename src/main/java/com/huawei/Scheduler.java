@@ -1,5 +1,7 @@
 package com.huawei;
 
+import edu.princeton.cs.algs4.In;
+
 import java.util.*;
 
 // 调度器类，负责进行车辆的调度
@@ -88,6 +90,48 @@ public class Scheduler {
                         }
                         ++count;
                         answer.add(carSchedule);
+                    }
+                }
+            }
+        }
+    }
+
+    //第三个方法，利用单次BFS的无环性质，直接发车，多次BFS之间做一个间隔。
+    public void SingleBFS(AllCar allCar, ArrayList<HashMap<Integer, HashMap<Integer, ArrayList<Integer>>>> bfsPath){
+        // 遍历所有路径
+        int startTime = 1;
+        int maxNum = 20;
+        int count = 1;
+        answer = new ArrayList<>();
+        for(int i = 0; i < bfsPath.size(); ++i){
+            Set<Integer> fromeSet = bfsPath.get(i).keySet();
+            HashMap<Integer, ArrayList<Integer>> pathMap;
+            // 对于每条路径
+            for(Integer from: fromeSet){
+                // 找到以from为起点的pathMap
+                pathMap = bfsPath.get(i).get(from);
+                // 对每一条的起点和终点的路径都遍历一次
+                for(Integer to: pathMap.keySet()){
+                    if(allCar.fromToCarsId.containsKey(from) && allCar.fromToCarsId.get(from).containsKey(to)){
+                        // 把arrayList里面的carId都拿出来规划路径，然后清空
+                        ArrayList<Integer> carIds = allCar.fromToCarsId.get(from).get(to);
+                        if(!carIds.isEmpty()){
+                            for(int index = 0; index < carIds.size(); ++index){
+                                ArrayList<Integer> carSchedule = new ArrayList<>();
+                                carSchedule.add(carIds.get(index));
+                                carSchedule.add(Math.max(startTime, allCar.carsMap_.get(carIds.get(index)).planTime_));
+                                // 加入路径
+                                carSchedule.addAll(pathMap.get(to));
+                                if(count == maxNum){
+                                    ++startTime;
+                                    count = 1;
+                                }
+                                ++count;
+                                answer.add(carSchedule);
+                            }
+                            // 清空carIds数组
+                            carIds.clear();
+                        }
                     }
                 }
             }

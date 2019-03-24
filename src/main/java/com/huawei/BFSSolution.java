@@ -11,6 +11,10 @@ import java.util.*;
 public class BFSSolution {
     // 由于路口的id不一定是按顺序的，所以这里不采用二维数组而是hashmap来保存
     public HashMap<Integer, HashMap<Integer, ArrayList<Integer>>> path_;
+
+    // 一个复杂的结构，用于记录从某个点开始进行广度优先遍历能够找到所有的路径
+    // 规划路线的时候按顺序遍历路径进行发车。
+    public ArrayList<HashMap<Integer, HashMap<Integer, ArrayList<Integer>>>> bfsPath_;
     // 存放road的信息
     public AllRoad allRoad_;
 
@@ -20,6 +24,7 @@ public class BFSSolution {
 
     public void GetPaths(Graph graph){
         path_ = new HashMap<>();
+        bfsPath_ = new ArrayList<>();
         // 对每个点都进行一次寻路
         for (Integer crossId: graph.GetV()
              ) {
@@ -71,9 +76,11 @@ public class BFSSolution {
         }
 
         // 反向查找出从source出发可以到达的的点的路径。
-        FindPath(edgeTo, source);
+        //FindPath(edgeTo, source);
+        FindMostPath(edgeTo,graph);
     }
 
+    // 一次广度搜索产生的路径绝对不会死锁。所以应当记录所有的路径。后续如果找到已经存在路径的起点和终点，则不再更新。
     private void FindPath(HashMap<Integer, Integer> edgeTo, int source){
         HashMap<Integer, ArrayList<Integer>> path = new HashMap<>();
         for (Integer roadId: edgeTo.keySet()) {
@@ -91,5 +98,49 @@ public class BFSSolution {
         }
         // 最后添加到类的成员当中
         path_.put(source, path);
+    }
+
+    private void FindMostPath(HashMap<Integer, Integer> edgeTo,Graph graph){
+        // 初始化一个新的path
+        HashMap<Integer, HashMap<Integer, ArrayList<Integer>>> path = new HashMap<>();
+        for(Integer roadId: edgeTo.keySet()){
+            // 用一个数组保存路径的顺序，第一个RoadId的to作为终点。
+            ArrayList<Integer> roadIds = new ArrayList<>();
+            //int to = allRoad_.roadsMap_.get(roadId).to_;
+            int tempRoadId = roadId;
+            // 一直找到一条最长的路径为止。
+            while(tempRoadId != -1){
+                roadIds.add(tempRoadId);
+                tempRoadId = edgeTo.get(tempRoadId);
+            }
+            // 获得了整个路径的Roadid，反转后添加到path当中
+            Collections.reverse(roadIds);
+            // 开始遍历路径的组合
+            for(int i = 0; i < roadIds.size(); ++i){
+                for(int j = roadIds.size(); j >i; --j){
+                    // 取出一条路径
+                    ArrayList<Integer> onePath = new ArrayList<>(roadIds.subList(i,j));
+                    int from = allRoad_.roadsMap_.get(onePath.get(0)).from_;
+                    int to = allRoad_.roadsMap_.get(onePath.get(onePath.size()-1)).to_;
+                    // 如果这条路的起点终点还没有路径，则添加
+                    if(path.containsKey(from)){
+                        if(path.get(from).containsKey(to)){
+                            continue;
+                        }
+                        else{
+                            path.get(from).put(to, onePath);
+                        }
+                    }
+                    else{
+                        // 新建一个hashmap
+                        HashMap<Integer, ArrayList<Integer>> newFromPath = new HashMap<>();
+                        // 新的路径需要加入
+                        newFromPath.put(to, onePath);
+                        path.put(from, newFromPath);
+                    }
+                }
+            }
+        }
+        bfsPath_.add(path);
     }
 }
