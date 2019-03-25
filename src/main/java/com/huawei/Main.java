@@ -33,16 +33,16 @@ public class Main {
         Graph graph = new Graph();
         graph.Init(allCross, allRoad);
         // 构造函数传入道路的信息
-        BFSSolution bfsSolution = new BFSSolution(allRoad);
-        bfsSolution.GetPaths(graph);
-        //Dijkstra dijkstra = new Dijkstra(allRoad);
-        //dijkstra.GetShortPath(graph);
+        //BFSSolution bfsSolution = new BFSSolution(allRoad);
+        //bfsSolution.GetPaths(graph);
+        Dijkstra dijkstra = new Dijkstra(allRoad);
+        dijkstra.GetShortPath(graph);
         Scheduler scheduler = new Scheduler();
         //scheduler.SimpleSchedule(allCar, bfsSolution.path_);
-        //scheduler.SimpleSchedule(allCar, dijkstra.path_);
+        scheduler.SimpleSchedule(allCar, dijkstra.path_);
         //scheduler.SameSourceSchedule(allCar, dijkstra.path_);
         //scheduler.SameSourceSchedule(allCar, bfsSolution.path_);
-        scheduler.SingleBFS(allCar, bfsSolution.bfsPath_);
+        //scheduler.SingleBFS(allCar, bfsSolution.bfsPath_);
         OutPut.WriteAnswer(scheduler, answerPath);
         // ArrayList<Road> adjCross1 = graph.Adj(1);
         // int a = graph.OutDegree(1);

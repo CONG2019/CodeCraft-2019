@@ -31,7 +31,7 @@ public class Scheduler {
             // 根据每台车的起始点和终点查找路径
             carSchedule.addAll(path.get(car.from_).get(car.to_));
             // 下一台车在出发
-            if(count == 14){
+            if(count == 20){
                 ++startTime;
                 count = 1;
             }
