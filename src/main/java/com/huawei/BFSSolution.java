@@ -1,5 +1,6 @@
 package com.huawei;
 
+import java.sql.Array;
 import java.util.*;
 
 // 先简单的找一条路径出来。
@@ -80,7 +81,7 @@ public class BFSSolution {
         FindMostPath(edgeTo,graph);
     }
 
-    // 一次广度搜索产生的路径绝对不会死锁。所以应当记录所有的路径。后续如果找到已经存在路径的起点和终点，则不再更新。
+    // 一次广度优先搜索能够找到的一个点到其他点的路径，然后记录
     private void FindPath(HashMap<Integer, Integer> edgeTo, int source){
         HashMap<Integer, ArrayList<Integer>> path = new HashMap<>();
         for (Integer roadId: edgeTo.keySet()) {
@@ -100,6 +101,8 @@ public class BFSSolution {
         path_.put(source, path);
     }
 
+
+    // 一次广度搜索产生的路径绝对不会死锁。所以应当记录所有的路径。后续如果找到已经存在路径的起点和终点，则不再更新。
     private void FindMostPath(HashMap<Integer, Integer> edgeTo,Graph graph){
         // 初始化一个新的path
         HashMap<Integer, HashMap<Integer, ArrayList<Integer>>> path = new HashMap<>();
@@ -137,6 +140,21 @@ public class BFSSolution {
                         // 新的路径需要加入
                         newFromPath.put(to, onePath);
                         path.put(from, newFromPath);
+                    }
+
+                    // 找到一条路之后也要加入到path_中，path_中放的是没那么容易死锁的路
+                    if(path_.containsKey(from)){
+                        if(path_.get(from).containsKey(to)){
+                            continue;
+                        }
+                        else{
+                            path_.get(from).put(to, onePath);
+                        }
+                    }
+                    else{
+                        HashMap<Integer, ArrayList<Integer>> newFromPath = new HashMap<>();
+                        newFromPath.put(to, onePath);
+                        path_.put(from, newFromPath);
                     }
                 }
             }
