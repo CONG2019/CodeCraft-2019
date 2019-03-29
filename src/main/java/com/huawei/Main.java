@@ -35,11 +35,12 @@ public class Main {
         // 构造函数传入道路的信息
         BFSSolution bfsSolution = new BFSSolution(allRoad);
         bfsSolution.GetPaths(graph);
-        //Dijkstra dijkstra = new Dijkstra(allRoad);
-        //dijkstra.GetShortPath(graph);
+        Dijkstra dijkstra = new Dijkstra(allRoad);
+        dijkstra.GetShortPath(graph);
         Scheduler scheduler = new Scheduler();
-        scheduler.SimpleSchedule(allCar, bfsSolution.path_);
-        scheduler.LoadBalancing(allCar, allRoad);
+        scheduler.SimpleSchedule(allCar, bfsSolution.path_, dijkstra.path_ );
+        //scheduler.LoadBalancing(allCar, allRoad);
+        //scheduler.AverageBalance(allCar);
         //scheduler.SimpleSchedule(allCar, dijkstra.path_);
         //scheduler.SameSourceSchedule(allCar, dijkstra.path_);
         //scheduler.SameSourceSchedule(allCar, bfsSolution.path_);

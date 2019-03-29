@@ -11,6 +11,7 @@ import java.util.Set;
 public class Graph {
     // hashmap表示的邻接表
     public HashMap<Integer, ArrayList<Road>> graph_;
+    private static int godPara = 0;
 
     public void Init(AllCross crosses, AllRoad roads){
          graph_ = new HashMap<>();
@@ -80,9 +81,13 @@ public class Graph {
     // 返回某个点的邻接边
     public ArrayList<Road> Adj(int v){
         ArrayList<Road> result = graph_.get(v);
+//        if(godPara % 2 == 0){
+//            Collections.reverse(result);
+//        }
+//        ++godPara;
         Collections.sort(result);
         //Collections.shuffle(result);
-        //Collections.reverse(result);
+
         return result;
     }
 

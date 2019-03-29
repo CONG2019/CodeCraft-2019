@@ -15,7 +15,7 @@ public class Scheduler {
     /*
        第一个方法，每隔一秒放入一辆车，不考虑任何情况，在BFSSolution中寻找车辆起点到终点的方案。
      */
-    public void SimpleSchedule(AllCar allCar, HashMap<Integer, HashMap<Integer, ArrayList<Integer>>> path) {
+    public void SimpleSchedule(AllCar allCar, HashMap<Integer, HashMap<Integer, ArrayList<Integer>>> path, HashMap<Integer, HashMap<Integer, ArrayList<Integer>>> dijPath) {
         // 先对车辆按照触发时间进行排序
         Collections.sort(allCar.cars_);
         // 逐辆车进行调度，每个时间单位只走一个车
@@ -28,10 +28,17 @@ public class Scheduler {
             ArrayList<Integer> carSchedule = new ArrayList<>();
             carSchedule.add(car.id_);
             carSchedule.add(Math.max(startTime, car.planTime_));
-            // 根据每台车的起始点和终点查找路径
             carSchedule.addAll(path.get(car.from_).get(car.to_));
+            // 根据每台车的起始点和终点查找路径
+//            if(car.id_ % 2 == 0){
+//                carSchedule.addAll(path.get(car.from_).get(car.to_));
+//            }
+//            else{
+//                carSchedule.addAll(dijPath.get(car.from_).get(car.to_));
+//                //continue;
+//            }
             // 下一台车在出发
-            if (count == 20) {
+            if (count == 18) {
                 ++startTime;
                 count = 1;
             }
@@ -142,11 +149,17 @@ public class Scheduler {
     // 求一个宽松一点的解，计算车在路上的行驶时间，然后乘以一个系数，这段时间假设车都在路上。
     // 调整一次后可以从最晚发车时间开始往前移，通过多次迭代使得最晚的发车时间提前。
     public void LoadBalancing(AllCar allCar, AllRoad allRoad) {
-        int godPara = 1; // 一个可以调节车在路上的时间的参数
+        // 前期的车都比较快，所以这个参数可以大一点。
+        int godPara = 2; // 一个可以调节车在路上的时间的参数
         // 一个数组负责保存每个时刻路上的车的情况，还要实时更新allRoad里面的每条路的已发车情况。
         ArrayList<HashMap<Integer, Integer>> carsPlanedTime = new ArrayList<>();
         // 直接遍历现在已经确定了路径的初步方案，通过调整发车时间来完善。
+        int counter = 0;
         for (ArrayList<Integer> route : answer) {
+//            ++counter;
+//            if(counter < 1000){
+//                continue;
+//            }
             int carId = route.get(0);
             //int planTime = route.get(1);
             int startRoadId = route.get(2);
@@ -284,11 +297,64 @@ public class Scheduler {
         }
 
         // 最后做一次过滤，将超过了500的发车时间对500取模。
-        for (ArrayList<Integer> route: answer
-             ) {
-            if(route.get(1) > 500){
-                route.set(1, route.get(1)%500);
+        // 这里的过滤过于草率，应该均匀分布到前面去。需要统计每个出发点的最大出发时间。
+        // 一个hashmap保存目前为止的发车时间
+        HashMap<Integer, Integer> carsMaxTime = new HashMap<>();
+        for(ArrayList<Integer> path: answer){
+            int roadId = path.get(2);
+            if(carsMaxTime.containsKey(roadId)){
+               if(carsMaxTime.get(roadId) < path.get(1)){
+                   carsMaxTime.put(roadId, path.get(1));
+               }
             }
+            else{
+                carsMaxTime.put(roadId, path.get(1));
+            }
+        }
+//        int maxTime = 600;
+//        for (ArrayList<Integer> route: answer
+//             ) {
+//            if(route.get(1) > maxTime){
+//                // 这里好像写错了。
+//                int carMaxTime = carsMaxTime.get(route.get(2)) - maxTime;
+//                int leftTime = route.get(1) - maxTime;
+//                int startTime = Math.max(maxTime*leftTime/carMaxTime, allCar.carsMap_.get(route.get(0)).planTime_);
+//                route.set(1, startTime);
+//            }
+//        }
+    }
+
+    public void AverageBalance(AllCar allCar){
+        // 根据发车的出发点统计不同的answer,出发点是roadId;
+        HashMap<Integer, Integer> carsFrom = new HashMap<>();
+        // 一个hashmap保存目前为止的发车时间
+        HashMap<Integer, Integer> carsPlanTime = new HashMap<>();
+        for(ArrayList<Integer> path: answer){
+            int roadId = path.get(2);
+            if(carsFrom.containsKey(roadId)){
+                carsFrom.put(roadId, carsFrom.get(roadId)+1);
+            }
+            else{
+                carsFrom.put(roadId, 1);
+                carsPlanTime.put(roadId, 1);
+            }
+        }
+        int godPara = 2000;
+        // 前期发车可以更密集一点,非线性发车。
+        // 调整answer
+        int count = 0;
+        for(ArrayList<Integer> path: answer){
+            int earliestTime = carsPlanTime.get(path.get(2));
+            earliestTime = Math.max(earliestTime, allCar.carsMap_.get(path.get(0)).planTime_);
+            path.set(1, earliestTime);
+//            if(count < 1000){
+//                carsPlanTime.put(path.get(2), earliestTime+1);
+//            }
+//            else{
+//                carsPlanTime.put(path.get(2), earliestTime+ godPara/carsFrom.get(path.get(2)));
+//            }
+//            ++count;
+            carsPlanTime.put(path.get(2), earliestTime+ godPara/carsFrom.get(path.get(2)));
         }
     }
 }
