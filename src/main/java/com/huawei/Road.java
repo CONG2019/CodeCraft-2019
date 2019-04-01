@@ -26,10 +26,18 @@ public class Road implements Comparable<Road>{
     public int roadLength_;
     // 每条路能够容纳的车辆数目。用于做一个简单的负载均匀算法，如果路上已经有大量的车，则选择往后推迟发车时间。
     public int maxCars_;
-
+    // 标记是否访问过
+    public boolean visited = false;
+    // 记录路上的车
+    public int cars_ = 0;
     // 重写比较算法
     @Override
     public int compareTo(Road road){
         return roadLength_ - road.roadLength_;
+    }
+
+    public int getLength_(){
+        // 路上的车越多权重越大
+        return (int)((float)(cars_ / length_ * channel_ * 3 + 1) * length_);
     }
 }

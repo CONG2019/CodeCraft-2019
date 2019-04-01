@@ -77,8 +77,8 @@ public class BFSSolution {
         }
 
         // 反向查找出从source出发可以到达的的点的路径。
-        FindPath(edgeTo, source);
-        //FindMostPath(edgeTo,graph);
+        //FindPath(edgeTo, source);
+        FindMostPath(edgeTo,graph);
     }
 
     // 一次广度优先搜索能够找到的一个点到其他点的路径，然后记录

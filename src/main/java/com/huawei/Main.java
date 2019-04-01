@@ -29,22 +29,39 @@ public class Main {
         AllCross allCross = new AllCross();
         allCross.Init(crossPath);
 
+        // 判断一下是哪个图？
+        // 图1的crossid包含id是11的
+        if(allCross.crossMap_.containsKey(11)){
+            System.out.print("It's map1!\n");
+        }
+        else{
+            System.out.print("It's map2!\n");
+        }
+        //return ;
         // 测试Graph
         Graph graph = new Graph();
         graph.Init(allCross, allRoad);
         // 构造函数传入道路的信息
-        BFSSolution bfsSolution = new BFSSolution(allRoad);
-        bfsSolution.GetPaths(graph);
-        Dijkstra dijkstra = new Dijkstra(allRoad);
-        dijkstra.GetShortPath(graph);
-        Scheduler scheduler = new Scheduler();
-        scheduler.SimpleSchedule(allCar, bfsSolution.path_, dijkstra.path_ );
+        //BFSSolution bfsSolution = new BFSSolution(allRoad);
+        //bfsSolution.GetPaths(graph);
+        //Dijkstra dijkstra = new Dijkstra(allRoad);
+        //dijkstra.GetShortPath(graph);
+        //Scheduler scheduler = new Scheduler();
+        //scheduler.SimpleSchedule(allCar, bfsSolution.path_, dijkstra.path_ );
         //scheduler.LoadBalancing(allCar, allRoad);
         //scheduler.AverageBalance(allCar);
         //scheduler.SimpleSchedule(allCar, dijkstra.path_);
         //scheduler.SameSourceSchedule(allCar, dijkstra.path_);
         //scheduler.SameSourceSchedule(allCar, bfsSolution.path_);
         //scheduler.SingleBFS(allCar, bfsSolution.bfsPath_);
+
+        /*
+          初赛方案
+         */
+        MinPath bfsSolution = new MinPath(allRoad, allCross);
+//        bfsSolution.GetPaths(graph);
+        Scheduler scheduler = new Scheduler(allCross);
+        scheduler.Schedule(allCar, bfsSolution, graph, allRoad);
         OutPut.WriteAnswer(scheduler, answerPath);
         // ArrayList<Road> adjCross1 = graph.Adj(1);
         // int a = graph.OutDegree(1);

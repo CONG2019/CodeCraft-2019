@@ -11,6 +11,18 @@ public class Scheduler {
     public ArrayList<ArrayList<Integer>> answer;
 
     //
+    private int NUMBER;
+
+    public Scheduler(AllCross allCross){
+        if(allCross.crossMap_.containsKey(11)){
+//            System.out.print("It's map1!\n");
+            NUMBER = 32;
+        }
+        else{
+//            System.out.print("It's map2!\n");
+            NUMBER = 28;
+        }
+    }
 
     /*
        第一个方法，每隔一秒放入一辆车，不考虑任何情况，在BFSSolution中寻找车辆起点到终点的方案。
@@ -150,7 +162,7 @@ public class Scheduler {
     // 调整一次后可以从最晚发车时间开始往前移，通过多次迭代使得最晚的发车时间提前。
     public void LoadBalancing(AllCar allCar, AllRoad allRoad) {
         // 前期的车都比较快，所以这个参数可以大一点。
-        int godPara = 2; // 一个可以调节车在路上的时间的参数
+        int godPara = 10; // 一个可以调节车在路上的时间的参数
         // 一个数组负责保存每个时刻路上的车的情况，还要实时更新allRoad里面的每条路的已发车情况。
         ArrayList<HashMap<Integer, Integer>> carsPlanedTime = new ArrayList<>();
         // 直接遍历现在已经确定了路径的初步方案，通过调整发车时间来完善。
@@ -339,7 +351,7 @@ public class Scheduler {
                 carsPlanTime.put(roadId, 1);
             }
         }
-        int godPara = 2000;
+        int godPara = 3000;
         // 前期发车可以更密集一点,非线性发车。
         // 调整answer
         int count = 0;
@@ -356,6 +368,124 @@ public class Scheduler {
 //            ++count;
             carsPlanTime.put(path.get(2), earliestTime+ godPara/carsFrom.get(path.get(2)));
         }
+    }
+
+    public void Schedule(AllCar allCar, MinPath bfsSolution, Graph graph, AllRoad allRoad){
+        //每辆车重新根据路况计算一次最短路径
+        ArrayList<ArrayList<Car>> carsArray = SplitCars(allCar);
+        //保存还没有成功安排路径的车
+        ArrayList<Car> queue = new ArrayList<>();
+
+        int startTime = 1;
+        int number = 0;
+        int j = 0;
+//        bfsSolution.GetPaths(graph);
+        answer = new ArrayList<>();
+        ArrayList<Car> Cars_ = new ArrayList<>();
+        for (ArrayList<Car> carlist: carsArray
+        ) {
+            for (Car car: carlist
+            ) {
+                //根据车速对发车数进行调整
+                // int NUMBER;     //记录同时发车的数量
+                // NUMBER = 28;
+                //每次发下一辆车试，优先发上一次没有发成功的车
+                for (Car car_: queue
+                ) {
+                    ArrayList<Integer> tmp = bfsSolution.SuitablePath(graph, car_, startTime);
+                    if(tmp != null){
+                        ArrayList<Integer> carSchedule_ = new ArrayList<>();
+                        carSchedule_.add(car_.id_);
+                        carSchedule_.add(Math.max(startTime, car_.planTime_));
+                        carSchedule_.addAll(tmp);
+                        answer.add(carSchedule_);
+                        Cars_.add(car_);
+                        number++;
+                    }
+                }
+                queue.removeAll(Cars_);
+                Cars_.clear();
+
+                // 先保存车辆id和实际安排的出发时间
+                ArrayList<Integer> carSchedule = new ArrayList<>();
+                carSchedule.add(car.id_);
+                carSchedule.add(Math.max(startTime, car.planTime_));
+                // 根据每台车的起始点和终点查找路径
+                ArrayList<Integer> tmp = bfsSolution.SuitablePath(graph, car, startTime);
+                if(tmp != null){
+                    carSchedule.addAll(tmp);
+                    answer.add(carSchedule);
+                    number++;
+                }else {
+                    queue.add(car);
+                }
+                // 下一台车在出发
+//                for (Integer roadID: (bfsSolution.Path_.get(car.from_).get(car.to_)
+//                ) ){
+//                    HashMap<Integer, Road> Roads_ = allRoad.roadsMap_;
+//                    Road road = Roads_.get(roadID);
+//                    road.cars_++;
+//                }
+                if(number >= (int)(NUMBER + 8 / car.speed_ + 0.5)){
+                    ++startTime;
+                    number = 0;
+                }
+//                if(j >= 1){
+//                    bfsSolution.GetPaths(graph);
+//                    j = 0;
+//                }
+//                number++;
+//                j++;
+//                answer.add(carSchedule);
+            }
+        }
+        while (!queue.isEmpty()){
+            startTime++;
+            for (Car car_: queue
+            ) {
+                ArrayList<Integer> tmp = bfsSolution.SuitablePath(graph, car_, startTime);
+                if(tmp != null){
+                    ArrayList<Integer> carSchedule_ = new ArrayList<>();
+                    carSchedule_.add(car_.id_);
+                    carSchedule_.add(Math.max(startTime, car_.planTime_));
+                    carSchedule_.addAll(tmp);
+                    answer.add(carSchedule_);
+                    Cars_.add(car_);
+                }
+            }
+            queue.removeAll(Cars_);
+            Cars_.clear();
+        }
+    }
+
+    // 按照速度分割车
+    public ArrayList<ArrayList<Car>> SplitCars(AllCar allCar){
+        ArrayList<ArrayList<Car>> carsArray = new ArrayList<>();
+        //将车按降序排序
+        Collections.sort(allCar.cars_, (car1, car2)->
+                car2.speed_ - car1.speed_);
+
+        int speed = allCar.cars_.get(0).speed_;
+        ArrayList<Car> carArrayList = new ArrayList<>();
+        for (Car car: allCar.cars_
+        ) {
+            if(car.speed_ == speed){
+                carArrayList.add(car);
+            }else {
+                carsArray.add(carArrayList);
+                carArrayList = new ArrayList<>();
+                speed = car.speed_;
+                carArrayList.add(car);
+            }
+        }
+        carsArray.add(carArrayList);
+        //不同速度的车再按时间顺序排序
+        for (ArrayList<Car> carArrayList1: carsArray
+        ) {
+            Collections.sort(carArrayList1, (car1, car2)->
+                    car1.planTime_ - car2.planTime_);
+        }
+        return carsArray;
     }
 }
 
