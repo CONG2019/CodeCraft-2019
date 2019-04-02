@@ -85,7 +85,7 @@ public class Graph {
 //            Collections.reverse(result);
 //        }
 //        ++godPara;
-        Collections.sort(result);
+        //Collections.sort(result);
         //Collections.shuffle(result);
 
         return result;

@@ -376,7 +376,7 @@ public class Scheduler {
         //保存还没有成功安排路径的车
         ArrayList<Car> queue = new ArrayList<>();
         // 足够的startTime让车辆先走。
-        int startTime = 3000;
+        int startTime = 900;
         int number = 0;
         int j = 0;
 //        bfsSolution.GetPaths(graph);
@@ -431,7 +431,11 @@ public class Scheduler {
 //                    ++startTime;
 //                    number = 0;
 //                }
-                startTime += 3;
+                if(number > NUMBER){
+                    number = 0;
+                    startTime += 1;
+                }
+                //startTime += 3;
 //                if(j >= 1){
 //                    bfsSolution.GetPaths(graph);
 //                    j = 0;
