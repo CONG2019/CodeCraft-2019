@@ -11,7 +11,7 @@ public class Main {
     {
         // 初始化日志
         PropertyConfigurator.configure("src/main/resources/log4j.properties");
-        if (args.length != 4) {
+        if (args.length != 5) {
             logger.error("please input args: inputFilePath, resultFilePath");
             return;
         }
@@ -21,14 +21,18 @@ public class Main {
         String carPath = args[0];
         String roadPath = args[1];
         String crossPath = args[2];
-        String answerPath = args[3];
+        // 接口更改
+        // 存放已有路径
+        String presetAnswerPath = args[3];
+        String answerPath = args[4];
         AllCar allCar = new AllCar();
         allCar.Init(carPath);
         AllRoad allRoad = new AllRoad();
         allRoad.Init(roadPath);
         AllCross allCross = new AllCross();
         allCross.Init(crossPath);
-
+        PresetAnswer presetAnswer = new PresetAnswer();
+        presetAnswer.Init(presetAnswerPath);
         // 判断一下是哪个图？
         // 图1的crossid包含id是11的
         if(allCross.crossMap_.containsKey(11)){

@@ -16,11 +16,11 @@ public class Scheduler {
     public Scheduler(AllCross allCross){
         if(allCross.crossMap_.containsKey(11)){
 //            System.out.print("It's map1!\n");
-            NUMBER = 32;
+            NUMBER = 10;
         }
         else{
 //            System.out.print("It's map2!\n");
-            NUMBER = 28;
+            NUMBER = 10;
         }
     }
 
@@ -375,8 +375,8 @@ public class Scheduler {
         ArrayList<ArrayList<Car>> carsArray = SplitCars(allCar);
         //保存还没有成功安排路径的车
         ArrayList<Car> queue = new ArrayList<>();
-
-        int startTime = 1;
+        // 足够的startTime让车辆先走。
+        int startTime = 3000;
         int number = 0;
         int j = 0;
 //        bfsSolution.GetPaths(graph);
@@ -426,10 +426,12 @@ public class Scheduler {
 //                    Road road = Roads_.get(roadID);
 //                    road.cars_++;
 //                }
-                if(number >= (int)(NUMBER + 8 / car.speed_ + 0.5)){
-                    ++startTime;
-                    number = 0;
-                }
+                // 目前先隔秒发车，试一试答案。
+//                if(number >= (int)(NUMBER + 8 / car.speed_ + 0.5)){
+//                    ++startTime;
+//                    number = 0;
+//                }
+                startTime += 3;
 //                if(j >= 1){
 //                    bfsSolution.GetPaths(graph);
 //                    j = 0;

@@ -9,12 +9,17 @@ public class Car implements Comparable<Car> {
         to_ = Integer.parseInt(carStr[2]);
         speed_ = Integer.parseInt(carStr[3]);
         planTime_ = Integer.parseInt(carStr[4]);
+        priority_ = Integer.parseInt(carStr[5]);
+        preset_ = Integer.parseInt(carStr[6]);
     }
     public int id_;
     public int from_;
     public int to_;
     public int speed_;
     public int planTime_;
+    // 新增两个属性，分别是优先车辆和预放置。
+    public int priority_;
+    public int preset_;
 
     // 排序函数
     @Override
