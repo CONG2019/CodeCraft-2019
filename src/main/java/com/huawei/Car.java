@@ -24,13 +24,16 @@ public class Car implements Comparable<Car> {
     // 排序函数
     @Override
     public int compareTo(Car car) {
-        if(car.speed_ == speed_){
-            if(planTime_ == car.planTime_){
-                return car.id_ - id_;
+        if(car.priority_ == priority_){
+            if(car.speed_ == speed_){
+                if(planTime_ == car.planTime_){
+                    return car.id_ - id_;
+                }
+                return planTime_ - car.planTime_;
             }
-            return planTime_ - car.planTime_;
+            return car.speed_ - speed_;
         }
-        return car.speed_ - speed_;
+        return car.priority_ - priority_;
        //return planTime_-car.planTime_;
         //return car.planTime_ - planTime_;
         //return from_-car.from_;

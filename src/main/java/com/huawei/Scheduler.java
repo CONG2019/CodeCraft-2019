@@ -22,6 +22,7 @@ public class Scheduler {
 //            System.out.print("It's map2!\n");
             NUMBER = 10;
         }
+        NUMBER = 19;
     }
 
     /*

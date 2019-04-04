@@ -1,9 +1,13 @@
 package com.huawei;
 
+import edu.princeton.cs.algs4.In;
+
 import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 
 // 保存提前预规划好的路线
 public class PresetAnswer {
@@ -11,9 +15,13 @@ public class PresetAnswer {
     // 所以可以用一个二维的ArrayList进行保存
     public ArrayList<ArrayList<Integer>> presetAnswer_;
 
+    // 保存一个预置车的集合
+    public Set<Integer> presetCarIds_;
+
     // 初始化函数
     public void Init(String presetAnswerFileName){
         presetAnswer_ = new ArrayList<>();
+        presetCarIds_ = new HashSet<>();
         // 打开文件，每一行都分割成一个数组存放。
         try(FileInputStream inputStream = new FileInputStream(presetAnswerFileName)){
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
@@ -33,6 +41,8 @@ public class PresetAnswer {
                     for(int i = 0; i < cross.length; ++i){
                         answer.add(Integer.parseInt(cross[i]));
                     }
+                    // 添加到集合
+                    presetCarIds_.add(answer.get(0));
                 }
             }
             bufferedReader.close();

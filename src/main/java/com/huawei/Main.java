@@ -25,14 +25,14 @@ public class Main {
         // 存放已有路径
         String presetAnswerPath = args[3];
         String answerPath = args[4];
+        PresetAnswer presetAnswer = new PresetAnswer();
+        presetAnswer.Init(presetAnswerPath);
         AllCar allCar = new AllCar();
-        allCar.Init(carPath);
+        allCar.Init(carPath, presetAnswer);
         AllRoad allRoad = new AllRoad();
         allRoad.Init(roadPath);
         AllCross allCross = new AllCross();
         allCross.Init(crossPath);
-        PresetAnswer presetAnswer = new PresetAnswer();
-        presetAnswer.Init(presetAnswerPath);
         // 判断一下是哪个图？
         // 图1的crossid包含id是11的
         if(allCross.crossMap_.containsKey(11)){
@@ -46,12 +46,12 @@ public class Main {
         Graph graph = new Graph();
         graph.Init(allCross, allRoad);
         // 构造函数传入道路的信息
-        //BFSSolution bfsSolution = new BFSSolution(allRoad);
-        //bfsSolution.GetPaths(graph);
-        //Dijkstra dijkstra = new Dijkstra(allRoad);
-        //dijkstra.GetShortPath(graph);
-        //Scheduler scheduler = new Scheduler();
-        //scheduler.SimpleSchedule(allCar, bfsSolution.path_, dijkstra.path_ );
+        BFSSolution bfsSolution = new BFSSolution(allRoad);
+        bfsSolution.GetPaths(graph);
+        Dijkstra dijkstra = new Dijkstra(allRoad);
+        dijkstra.GetShortPath(graph);
+        Scheduler scheduler = new Scheduler(allCross);
+        scheduler.SimpleSchedule(allCar, bfsSolution.path_, dijkstra.path_ );
         //scheduler.LoadBalancing(allCar, allRoad);
         //scheduler.AverageBalance(allCar);
         //scheduler.SimpleSchedule(allCar, dijkstra.path_);
@@ -62,10 +62,10 @@ public class Main {
         /*
           初赛方案
          */
-        MinPath bfsSolution = new MinPath(allRoad, allCross);
-//        bfsSolution.GetPaths(graph);
-        Scheduler scheduler = new Scheduler(allCross);
-        scheduler.Schedule(allCar, bfsSolution, graph, allRoad);
+//        MinPath bfsSolution = new MinPath(allRoad, allCross);
+////        bfsSolution.GetPaths(graph);
+//        Scheduler scheduler = new Scheduler(allCross);
+//        scheduler.Schedule(allCar, bfsSolution, graph, allRoad);
         OutPut.WriteAnswer(scheduler, answerPath);
         // ArrayList<Road> adjCross1 = graph.Adj(1);
         // int a = graph.OutDegree(1);

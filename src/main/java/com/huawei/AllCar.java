@@ -22,7 +22,7 @@ public class AllCar {
     // 存储个数
     public HashMap<Integer, HashMap<Integer, Integer>> fromToCarsNumber;
     // 通过传入的文件名读入参数
-    public void Init(String carFileName){
+    public void Init(String carFileName, PresetAnswer presetAnswer){
         cars_ = new ArrayList<>();
         carsMap_ = new HashMap<>();
         carsFrom_ = new HashMap<>();
@@ -48,6 +48,10 @@ public class AllCar {
                     String[] car = str.split(",");
                     // 添加新的道路进去
                     Car oneCar = new Car(car);
+                    // 剔除掉预置车
+                    if(presetAnswer.presetCarIds_.contains(oneCar.id_)){
+                        continue;
+                    }
                     if(oneCar.planTime_ > maxPlanTime){
                         maxPlanTime = oneCar.planTime_;
                     }
