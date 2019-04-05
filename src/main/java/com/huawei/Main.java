@@ -27,8 +27,10 @@ public class Main {
         String answerPath = args[4];
         PresetAnswer presetAnswer = new PresetAnswer();
         presetAnswer.Init(presetAnswerPath);
-        AllCar allCar = new AllCar();
-        allCar.Init(carPath, presetAnswer);
+        AllCar allPriorityCar = new AllCar();
+        allPriorityCar.Init(carPath, presetAnswer, true);
+        AllCar allCommonCar = new AllCar();
+        allCommonCar.Init(carPath, presetAnswer, false);
         AllRoad allRoad = new AllRoad();
         allRoad.Init(roadPath);
         AllCross allCross = new AllCross();
@@ -46,12 +48,12 @@ public class Main {
         Graph graph = new Graph();
         graph.Init(allCross, allRoad);
         // 构造函数传入道路的信息
-        BFSSolution bfsSolution = new BFSSolution(allRoad);
-        bfsSolution.GetPaths(graph);
-        Dijkstra dijkstra = new Dijkstra(allRoad);
-        dijkstra.GetShortPath(graph);
-        Scheduler scheduler = new Scheduler(allCross);
-        scheduler.SimpleSchedule(allCar, bfsSolution.path_, dijkstra.path_ );
+        //BFSSolution bfsSolution = new BFSSolution(allRoad);
+        //bfsSolution.GetPaths(graph);
+        //Dijkstra dijkstra = new Dijkstra(allRoad);
+        //dijkstra.GetShortPath(graph);
+        //Scheduler scheduler = new Scheduler(allCross);
+        //scheduler.SimpleSchedule(allCar, bfsSolution.path_, dijkstra.path_ );
         //scheduler.LoadBalancing(allCar, allRoad);
         //scheduler.AverageBalance(allCar);
         //scheduler.SimpleSchedule(allCar, dijkstra.path_);
@@ -60,13 +62,28 @@ public class Main {
         //scheduler.SingleBFS(allCar, bfsSolution.bfsPath_);
 
         /*
+         * just for test
+         *
+         */
+        //DFSSolution dfsSolution = new DFSSolution();
+        //dfsSolution.GetAllPaths(graph);
+        /*
           初赛方案
          */
-//        MinPath bfsSolution = new MinPath(allRoad, allCross);
-////        bfsSolution.GetPaths(graph);
-//        Scheduler scheduler = new Scheduler(allCross);
-//        scheduler.Schedule(allCar, bfsSolution, graph, allRoad);
-        OutPut.WriteAnswer(scheduler, answerPath);
+        MinPath bfsSolution = new MinPath(allRoad, allCross);
+//        bfsSolution.GetPaths(graph);
+        Scheduler schedulerPriority = new Scheduler(allCross, presetAnswer, true);
+        ArrayList<ArrayList<Integer>> allAnswer;
+        // 先求出优先车辆的路径。
+        int startTime = schedulerPriority.Schedule(allPriorityCar, bfsSolution, graph, allRoad, 900);
+        allAnswer = schedulerPriority.answer;
+
+        // 再求普通车辆的路径
+        Scheduler schedulerCommon = new Scheduler(allCross, presetAnswer, false);
+        startTime = schedulerCommon.Schedule(allCommonCar, bfsSolution, graph, allRoad, startTime);
+        allAnswer.addAll(schedulerCommon.answer);
+
+        OutPut.WriteAnswer(allAnswer, answerPath);
         // ArrayList<Road> adjCross1 = graph.Adj(1);
         // int a = graph.OutDegree(1);
         logger.info("carPath = " + carPath + " roadPath = " + roadPath + " crossPath = " + crossPath + " and answerPath = " + answerPath);

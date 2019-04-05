@@ -16,13 +16,12 @@ public class AllCar {
     public HashMap<Integer, ArrayList<Integer>> carsFrom_;
     // 存储到达不同路口的车的id
     public HashMap<Integer, ArrayList<Integer>> carsTo_;
-
     // 存储from到to的车辆的id。和个数
     public HashMap<Integer, HashMap<Integer, ArrayList<Integer>>> fromToCarsId;
     // 存储个数
     public HashMap<Integer, HashMap<Integer, Integer>> fromToCarsNumber;
     // 通过传入的文件名读入参数
-    public void Init(String carFileName, PresetAnswer presetAnswer){
+    public void Init(String carFileName, PresetAnswer presetAnswer, boolean isPriority){
         cars_ = new ArrayList<>();
         carsMap_ = new HashMap<>();
         carsFrom_ = new HashMap<>();
@@ -50,6 +49,13 @@ public class AllCar {
                     Car oneCar = new Car(car);
                     // 剔除掉预置车
                     if(presetAnswer.presetCarIds_.contains(oneCar.id_)){
+                        continue;
+                    }
+                    // 根据是否是优先车辆进行选择
+                    if(isPriority && oneCar.priority_ == 0){
+                        continue;
+                    }
+                    if(!isPriority && oneCar.priority_ == 1){
                         continue;
                     }
                     if(oneCar.planTime_ > maxPlanTime){

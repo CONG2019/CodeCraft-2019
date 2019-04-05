@@ -9,20 +9,20 @@ import java.util.Comparator;
 
 // 根据输出文件的路径和调度答案输出文件
 public class OutPut {
-    public static void WriteAnswer(Scheduler scheduler, String fileName){
+    public static void WriteAnswer(ArrayList<ArrayList<Integer>> allAnswer, String fileName){
         // 打开文件
         try {
             FileWriter writer = new FileWriter(fileName);
             BufferedWriter bufWriter = new BufferedWriter(writer);
             // 答案先排序一下
-            Collections.sort(scheduler.answer, new Comparator<ArrayList<Integer>>() {
+            Collections.sort(allAnswer, new Comparator<ArrayList<Integer>>() {
                 @Override
                 public int compare(ArrayList<Integer> integers, ArrayList<Integer> t1) {
                     return integers.get(1) - t1.get(1);
                 }
             });
             // 循环写入答案
-            for (ArrayList<Integer> answer: scheduler.answer
+            for (ArrayList<Integer> answer: allAnswer
                  ) {
                 // 用一个String保存内容
                 String s = new String("(");

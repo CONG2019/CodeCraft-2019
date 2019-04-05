@@ -66,7 +66,7 @@ public class MinPath {
             queue.add(road);
             //标记原点到第一层定点的距离
             MinLength[road.to_] = road.getLength_();
-            MinTime[road.to_] = Time + (int)((float)road.length_ / car.speed_ + 1);
+            MinTime[road.to_] = Time + (int)((float)road.length_ / Math.min(car.speed_, road.speed_) + 1);
             edgeTo.put(road.to_, road);
         }
 
@@ -82,7 +82,7 @@ public class MinPath {
 
                 //先判断这条路是否适合走
                 boolean flag = true;
-                for(int i = MinTime[outRoad.from_]; i <= MinTime[outRoad.from_] + (int)((float)outRoad.length_ / car.speed_ + 1); i++){
+                for(int i = MinTime[outRoad.from_]; i <= MinTime[outRoad.from_] + (int)((float)outRoad.length_ / Math.min(car.speed_, outRoad.speed_) + 1); i++){
 //                    int roadCondition = RoadCondition.get(i);
                     //如果发现某个时刻车的数量超出预定值，则此路不通
                     if(RoadCondition.get(i) != null && RoadCondition.get(i) > (int)(outRoad.length_ * outRoad.channel_ * p)){
@@ -102,7 +102,7 @@ public class MinPath {
                     queue.add(outRoad);
                     //更改原点到改点的距离
                     MinLength[tmp_to] = MinLength[outRoad.from_] + outRoad.getLength_();
-                    MinTime[tmp_to] = MinTime[outRoad.from_] + (int)((float)outRoad.length_ / car.speed_ + 1);
+                    MinTime[tmp_to] = MinTime[outRoad.from_] + (int)((float)outRoad.length_ / Math.min(car.speed_, outRoad.speed_) + 1);
                     // 更改路劲RoadId,移除旧路线
                     //不能用replace, 因为如果是新路径的话就不能添加了
                     edgeTo.remove(outRoad.to_);
@@ -121,20 +121,49 @@ public class MinPath {
             while (edgeTo.get(tmp) != null){
 //                HashMap<Integer, HashMap<Integer, Integer>>;
                 HashMap<Integer, Integer> roadcondition = IsCongestion.get(edgeTo.get(tmp).id_);
-                for(int i = MinTime[edgeTo.get(tmp).from_]; i < MinTime[edgeTo.get(tmp).from_] + (int)((float)edgeTo.get(tmp).length_ / car.speed_ + 1); i++){
+                for(int i = MinTime[edgeTo.get(tmp).from_]; i <= MinTime[edgeTo.get(tmp).from_] + 2*(int)((float)edgeTo.get(tmp).length_ / car.speed_ + 1); i++){
+                    //某时刻已经存在车，则车数量加1，否则增加该时刻的路况
                     if(roadcondition.get(i) != null){
                         roadcondition.replace(i, roadcondition.get(i)+1);
                     }else {
                         roadcondition.put(i, 1);
                     }
                 }
+                //添加路径
                 path.add(edgeTo.get(tmp).id_);
                 tmp = edgeTo.get(tmp).from_;
             }
+            //反向后返回路径
             Collections.reverse(path);
             return path;
         }else {
             return null;
+        }
+    }
+
+    //道路状况初始化
+    public void IsCongestion_Init(PresetAnswer presetAnswer, AllCar allCar){
+        //保存某时刻路上车的数量，HashMap<RoadID, HashMap<Time, Number>>
+
+        for (ArrayList<Integer> presetPath: presetAnswer.presetAnswer_
+        ) {
+            Integer carID = presetPath.get(0);
+            Car car = allCar.carsMap_.get(carID);
+            Integer presetTime = presetPath.get(1);
+            //更改一台预置车上路后的路况
+            for (int i = 2; i < presetPath.size(); i++){
+                Integer roadID = presetPath.get(i);
+                Road road = allRoad_.roadsMap_.get(roadID);
+                HashMap<Integer, Integer> roadcondition = IsCongestion.get(roadID);
+                for (int j = presetTime; j <= presetTime + (int)((float)road.length_ / Math.min(car.speed_, road.speed_) + 1); j++){
+                    if(roadcondition.get(j) != null){
+                        roadcondition.replace(j, roadcondition.get(i) + 1);
+                    }else {
+                        roadcondition.put(j, 1);
+                    }
+                }
+                presetTime = presetTime + (int)((float)road.length_ / Math.min(car.speed_, road.speed_) + 1);
+            }
         }
     }
 }
