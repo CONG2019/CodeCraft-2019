@@ -12,22 +12,39 @@ public class Scheduler {
 
     //
     private int NUMBER;
+    private int PRENUMBER;
     //增加一个统计某时刻总发车数量的HashMap
     HashMap<Integer, Integer> CarNumber;
     public Scheduler(AllCross allCross, PresetAnswer presetAnswer, boolean isPriority){
-        if(allCross.crossMap_.containsKey(11)){
+        if(allCross.crossMap_.containsKey(22)){
 //            System.out.print("It's map1!\n");
-            NUMBER = 10;
+            if(isPriority){
+                //PRENUMBER = 6;
+                //NUMBER = 100;
+                PRENUMBER = 3;
+                NUMBER = 150;
+            }
+            else{
+                //PRENUMBER = 4;
+                //NUMBER = 42;
+                PRENUMBER = 3;
+                NUMBER = 60;
+            }
         }
         else{
 //            System.out.print("It's map2!\n");
-            NUMBER = 10;
-        }
-        if(isPriority){
-            NUMBER = 20;
-        }
-        else{
-            NUMBER = 19;
+            if(isPriority){
+                //PRENUMBER = 6;
+                PRENUMBER = 9;
+                NUMBER = 210;
+                //NUMBER = 135;
+            }
+            else{
+                //PRENUMBER = 4;
+                //NUMBER = 63;
+                PRENUMBER = 6;
+                NUMBER = 100;
+            }
         }
         //初始化预置车每时刻的发车数
         CarNumber = new HashMap<>();
@@ -144,9 +161,9 @@ public class Scheduler {
 //                    ++startTime;
 //                    number = 0;
 //                }
-                if(number > NUMBER){
+                if((startTime >=750 && number > NUMBER) || (startTime < 750 && number > PRENUMBER)){
 //                    number = 0;
-                    startTime += 1;
+                    startTime += 3;
                     //强行将发车数近似变为线性发车
 //                    if(CarNumber.get(startTime) != null){
 //                        number = CarNumber.get(startTime) % NUMBER;
@@ -155,17 +172,20 @@ public class Scheduler {
 //                        number = 0;
 //                    }
                     //在大量发车前后空出一定时间不发车
-                    if(CarNumber.get(startTime + 4) != null && CarNumber.get(startTime + 2) > 2 * NUMBER){
+                    if(CarNumber.get(startTime + 2) != null && CarNumber.get(startTime + 2) > 2 * NUMBER){
                         number = 0;
-                        startTime = startTime + CarNumber.get(startTime) / NUMBER + 8;
+                        startTime = startTime + CarNumber.get(startTime+1) / NUMBER + 8;
                     }else{
                         number = 0;
                     }
                 }
             }
         }
+        int count = 0;
         while (!queue.isEmpty()){
             startTime++;
+            ++count;
+            // 统计一下这里造成的秒数
             for (Car car_: queue
             ) {
                 ArrayList<Integer> tmp = bfsSolution.SuitablePath(graph, car_, startTime);
@@ -181,6 +201,8 @@ public class Scheduler {
             queue.removeAll(Cars_);
             Cars_.clear();
         }
+        // 输出统计数
+        //System.out.println(count);
         return startTime;
     }
 

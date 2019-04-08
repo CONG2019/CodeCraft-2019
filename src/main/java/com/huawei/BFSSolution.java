@@ -1,6 +1,5 @@
 package com.huawei;
 
-import java.sql.Array;
 import java.util.*;
 
 // 先简单的找一条路径出来。
@@ -18,18 +17,32 @@ public class BFSSolution {
     public ArrayList<HashMap<Integer, HashMap<Integer, ArrayList<Integer>>>> bfsPath_;
     // 存放road的信息
     public AllRoad allRoad_;
+    //保存某时刻路上车的数量，HashMap<RoadID, HashMap<Time, Number>>
+    private HashMap<Integer, HashMap<Integer, Integer>> isCongestion_;
+    // 寻路的时间起点和时间间隔
+    private Integer startTime_ = 0;
+    private Integer interval_ = 0;
+    private double para_ = 0.0;
 
-    public BFSSolution(AllRoad allRoad){
+    private Graph graph_;
+
+    public BFSSolution(AllRoad allRoad, HashMap<Integer, HashMap<Integer, Integer>> isCongestion, Graph graph){
+        isCongestion_ = isCongestion;
         allRoad_ = allRoad;
+        graph_ = graph;
     }
 
-    public void GetPaths(Graph graph){
+    // 每次getpath都会新建新的
+    public void GetPaths(Integer startTime, Integer interval, double godPara){
+        startTime_ = startTime;
+        interval_ = interval;
+        para_ = godPara;
         path_ = new HashMap<>();
         bfsPath_ = new ArrayList<>();
         // 对每个点都进行一次寻路
-        for (Integer crossId: graph.GetV()
+        for (Integer crossId: graph_.GetV()
              ) {
-            BFS(graph, crossId);
+            BFS(crossId);
         }
     }
 
@@ -38,9 +51,9 @@ public class BFSSolution {
     @Graph graph: 出入地图信息
     @int source: 出发点
      */
-    private void BFS(Graph graph, int source){
+    private void BFS(int source){
         // 找出最大的顶点的索引值
-        int maxIndex = Collections.max(graph.GetV());
+        int maxIndex = Collections.max(graph_.GetV());
         // 这里初始值是false吗？
         boolean[] marked = new boolean[maxIndex+1];
         // 记录RoadId的hashmap
@@ -50,7 +63,7 @@ public class BFSSolution {
         // 标记一下起点
         marked[source] = true;
         // 将起点的邻接边加入到队列
-        for (Road road: graph.Adj(source)) {
+        for (Road road: graph_.Adj(source)) {
             queue.add(road);
             // 标记为已访问
             marked[road.to_] = true;
@@ -64,9 +77,22 @@ public class BFSSolution {
             // 找出该路的终点，作为新的起点
             int to = road.to_;
             // 遍历以该点为起点的边
-            for (Road outRoad: graph.Adj(to)) {
+            for (Road outRoad: graph_.Adj(to)) {
                 int tmp_to = outRoad.to_;
                 if(!marked[tmp_to]){
+                    boolean flag = true;
+                    HashMap<Integer, Integer> roadCondition = isCongestion_.get(outRoad.id_);
+                    // 检查接下来的一段时间是否会堵塞
+                    for(int i = startTime_; i < (startTime_+interval_); ++i){
+                        if(roadCondition.get(i) != null && roadCondition.get(i) > (int)(outRoad.channel_*outRoad.length_*para_)){
+                            flag = false;
+                            break;
+                        }
+                    }
+                    // 此路不能经过。
+                    if(!flag){
+                        continue;
+                    }
                     // 标记一下父路径的RoadId
                     edgeTo.put(outRoad.id_, road.id_);
                     marked[tmp_to] = true;
@@ -78,7 +104,7 @@ public class BFSSolution {
 
         // 反向查找出从source出发可以到达的的点的路径。
         //FindPath(edgeTo, source);
-        FindMostPath(edgeTo,graph);
+        FindMostPath(edgeTo);
     }
 
     // 一次广度优先搜索能够找到的一个点到其他点的路径，然后记录
@@ -103,7 +129,7 @@ public class BFSSolution {
 
 
     // 一次广度搜索产生的路径绝对不会死锁。所以应当记录所有的路径。后续如果找到已经存在路径的起点和终点，则不再更新。
-    private void FindMostPath(HashMap<Integer, Integer> edgeTo,Graph graph){
+    private void FindMostPath(HashMap<Integer, Integer> edgeTo){
         // 初始化一个新的path
         HashMap<Integer, HashMap<Integer, ArrayList<Integer>>> path = new HashMap<>();
         for(Integer roadId: edgeTo.keySet()){

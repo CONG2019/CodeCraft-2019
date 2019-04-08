@@ -28,16 +28,18 @@ public class Main {
         PresetAnswer presetAnswer = new PresetAnswer();
         presetAnswer.Init(presetAnswerPath);
         AllCar allPriorityCar = new AllCar();
-        allPriorityCar.Init(carPath, presetAnswer, true);
+        allPriorityCar.Init(carPath, presetAnswer, true, false);
         AllCar allCommonCar = new AllCar();
-        allCommonCar.Init(carPath, presetAnswer, false);
+        allCommonCar.Init(carPath, presetAnswer, false, false);
+        AllCar allCar = new AllCar();
+        allCar.Init(carPath, presetAnswer, true, true);
         AllRoad allRoad = new AllRoad();
         allRoad.Init(roadPath);
         AllCross allCross = new AllCross();
         allCross.Init(crossPath);
         // 判断一下是哪个图？
         // 图1的crossid包含id是11的
-        if(allCross.crossMap_.containsKey(11)){
+        if(allCross.crossMap_.containsKey(22)){
             System.out.print("It's map1!\n");
         }
         else{
@@ -47,19 +49,6 @@ public class Main {
         // 测试Graph
         Graph graph = new Graph();
         graph.Init(allCross, allRoad);
-        // 构造函数传入道路的信息
-        //BFSSolution bfsSolution = new BFSSolution(allRoad);
-        //bfsSolution.GetPaths(graph);
-        //Dijkstra dijkstra = new Dijkstra(allRoad);
-        //dijkstra.GetShortPath(graph);
-        //Scheduler scheduler = new Scheduler(allCross);
-        //scheduler.SimpleSchedule(allCar, bfsSolution.path_, dijkstra.path_ );
-        //scheduler.LoadBalancing(allCar, allRoad);
-        //scheduler.AverageBalance(allCar);
-        //scheduler.SimpleSchedule(allCar, dijkstra.path_);
-        //scheduler.SameSourceSchedule(allCar, dijkstra.path_);
-        //scheduler.SameSourceSchedule(allCar, bfsSolution.path_);
-        //scheduler.SingleBFS(allCar, bfsSolution.bfsPath_);
 
         /*
          * just for test
@@ -71,11 +60,12 @@ public class Main {
           初赛方案
          */
         MinPath bfsSolution = new MinPath(allRoad, allCross);
+        bfsSolution.IsCongestion_Init(presetAnswer, allCar);
 //        bfsSolution.GetPaths(graph);
         Scheduler schedulerPriority = new Scheduler(allCross, presetAnswer, true);
         ArrayList<ArrayList<Integer>> allAnswer;
         // 先求出优先车辆的路径。
-        int startTime = schedulerPriority.Schedule(allPriorityCar, bfsSolution, graph, allRoad, 900);
+        int startTime = schedulerPriority.Schedule(allPriorityCar, bfsSolution, graph, allRoad, 750);
         allAnswer = schedulerPriority.answer;
 
         // 再求普通车辆的路径
@@ -83,6 +73,11 @@ public class Main {
         startTime = schedulerCommon.Schedule(allCommonCar, bfsSolution, graph, allRoad, startTime);
         allAnswer.addAll(schedulerCommon.answer);
 
+
+        // 优化答案
+        GraphAverage graphAverage = new GraphAverage();
+        graphAverage.Init(allAnswer, allCar, allRoad, allCross, graph);
+        allAnswer = graphAverage.AdjustInsert(allAnswer);
         OutPut.WriteAnswer(allAnswer, answerPath);
         // ArrayList<Road> adjCross1 = graph.Adj(1);
         // int a = graph.OutDegree(1);

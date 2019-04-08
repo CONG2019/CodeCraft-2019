@@ -19,13 +19,13 @@ public class MinPath {
             IsCongestion.put(road.id_, new HashMap<>());
         }
 
-        if(allCross.crossMap_.containsKey(11)){
+        if(allCross.crossMap_.containsKey(22)){
 //            System.out.print("It's map1!\n");
             p = 0.5;
         }
         else{
 //            System.out.print("It's map2!\n");
-            p = 0.37;
+            p = 0.5;
         }
     }
 
@@ -121,7 +121,7 @@ public class MinPath {
             while (edgeTo.get(tmp) != null){
 //                HashMap<Integer, HashMap<Integer, Integer>>;
                 HashMap<Integer, Integer> roadcondition = IsCongestion.get(edgeTo.get(tmp).id_);
-                for(int i = MinTime[edgeTo.get(tmp).from_]; i <= MinTime[edgeTo.get(tmp).from_] + 2*(int)((float)edgeTo.get(tmp).length_ / car.speed_ + 1); i++){
+                for(int i = MinTime[edgeTo.get(tmp).from_]; i <= MinTime[edgeTo.get(tmp).from_] + (int)((float)edgeTo.get(tmp).length_ / car.speed_ + 1); i++){
                     //某时刻已经存在车，则车数量加1，否则增加该时刻的路况
                     if(roadcondition.get(i) != null){
                         roadcondition.replace(i, roadcondition.get(i)+1);
@@ -157,7 +157,7 @@ public class MinPath {
                 HashMap<Integer, Integer> roadcondition = IsCongestion.get(roadID);
                 for (int j = presetTime; j <= presetTime + (int)((float)road.length_ / Math.min(car.speed_, road.speed_) + 1); j++){
                     if(roadcondition.get(j) != null){
-                        roadcondition.replace(j, roadcondition.get(i) + 1);
+                        roadcondition.replace(j, roadcondition.get(j) + 1);
                     }else {
                         roadcondition.put(j, 1);
                     }

@@ -20,6 +20,7 @@ public class Car implements Comparable<Car> {
     // 新增两个属性，分别是优先车辆和预放置。
     public int priority_;
     public int preset_;
+    public int test_;
 
     // 排序函数
     @Override
