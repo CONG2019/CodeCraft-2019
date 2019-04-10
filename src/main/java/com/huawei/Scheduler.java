@@ -21,29 +21,29 @@ public class Scheduler {
             if(isPriority){
                 //PRENUMBER = 6;
                 //NUMBER = 100;
-                PRENUMBER = 3;
-                NUMBER = 150;
+                PRENUMBER = 6;
+                NUMBER = 68;
             }
             else{
                 //PRENUMBER = 4;
                 //NUMBER = 42;
-                PRENUMBER = 3;
-                NUMBER = 60;
+                PRENUMBER = 6;
+                NUMBER =58;
             }
         }
         else{
 //            System.out.print("It's map2!\n");
             if(isPriority){
                 //PRENUMBER = 6;
-                PRENUMBER = 9;
-                NUMBER = 210;
+                PRENUMBER = 7;
+                NUMBER = 106;
                 //NUMBER = 135;
             }
             else{
                 //PRENUMBER = 4;
                 //NUMBER = 63;
                 PRENUMBER = 6;
-                NUMBER = 100;
+                NUMBER = 75;
             }
         }
         //初始化预置车每时刻的发车数
@@ -61,7 +61,7 @@ public class Scheduler {
     /*
        第一个方法，每隔一秒放入一辆车，不考虑任何情况，在BFSSolution中寻找车辆起点到终点的方案。
      */
-    public void SimpleSchedule(AllCar allCar, HashMap<Integer, HashMap<Integer, ArrayList<Integer>>> path, HashMap<Integer, HashMap<Integer, ArrayList<Integer>>> dijPath) {
+    public int SimpleSchedule(AllCar allCar, HashMap<Integer, HashMap<Integer, ArrayList<Integer>>> path, HashMap<Integer, HashMap<Integer, ArrayList<Integer>>> dijPath) {
         // 先对车辆按照触发时间进行排序
         Collections.sort(allCar.cars_);
         // 逐辆车进行调度，每个时间单位只走一个车
@@ -91,6 +91,7 @@ public class Scheduler {
             ++count;
             answer.add(carSchedule);
         }
+        return startTime;
     }
 
     public int Schedule(AllCar allCar, MinPath bfsSolution, Graph graph, AllRoad allRoad, int startTime){
@@ -163,7 +164,7 @@ public class Scheduler {
 //                }
                 if((startTime >=750 && number > NUMBER) || (startTime < 750 && number > PRENUMBER)){
 //                    number = 0;
-                    startTime += 3;
+                    startTime += 2;
                     //强行将发车数近似变为线性发车
 //                    if(CarNumber.get(startTime) != null){
 //                        number = CarNumber.get(startTime) % NUMBER;
@@ -174,18 +175,18 @@ public class Scheduler {
                     //在大量发车前后空出一定时间不发车
                     if(CarNumber.get(startTime + 2) != null && CarNumber.get(startTime + 2) > 2 * NUMBER){
                         number = 0;
-                        startTime = startTime + CarNumber.get(startTime+1) / NUMBER + 8;
+                        startTime = startTime + CarNumber.get(startTime+2) / NUMBER + 8;
                     }else{
                         number = 0;
                     }
                 }
             }
+
+            // 车速降低一级，发车量减少。
+           // NUMBER -= 10;
         }
-        int count = 0;
         while (!queue.isEmpty()){
             startTime++;
-            ++count;
-            // 统计一下这里造成的秒数
             for (Car car_: queue
             ) {
                 ArrayList<Integer> tmp = bfsSolution.SuitablePath(graph, car_, startTime);
@@ -201,15 +202,13 @@ public class Scheduler {
             queue.removeAll(Cars_);
             Cars_.clear();
         }
-        // 输出统计数
-        //System.out.println(count);
         return startTime;
     }
 
     // 按照速度分割车
     public ArrayList<ArrayList<Car>> SplitCars(AllCar allCar){
         ArrayList<ArrayList<Car>> carsArray = new ArrayList<>();
-        //将车按降序排序
+        //将车按降序排序int carId = sameSpeedCars.get(j).id_;
         Collections.sort(allCar.cars_, (car1, car2)->
                 car2.speed_ - car1.speed_);
 
@@ -233,10 +232,66 @@ public class Scheduler {
             Collections.sort(carArrayList1, (car1, car2)->
                     car1.planTime_ - car2.planTime_);
         }
-        return carsArray;
+
+        // 按照出发点和速度分割车，尽可能使得每个点的发车均衡。
+        // 还是按照速度分割，但是速度相同的车按照不同的出发点进行排列。然后轮询不同的路口进行顺序发车
+        ArrayList<ArrayList<Car>> newCarsArray = new ArrayList<>();
+        for(int i = 0; i < carsArray.size(); ++i){
+            // 对于每一种相同速度的车，按照出发路口进行发车。
+            HashMap<Integer, ArrayList<Car>> carsFrom = new HashMap<>();
+            ArrayList<Car> sameSpeedCars = carsArray.get(i);
+            for(int j = 0; j < sameSpeedCars.size(); ++j){
+                Car car = sameSpeedCars.get(j);
+                if(carsFrom.containsKey(car.from_)){
+                    carsFrom.get(car.from_).add(sameSpeedCars.get(j));
+                }
+                else{
+                    ArrayList<Car> carFrom = new ArrayList<>();
+                    carFrom.add(sameSpeedCars.get(j));
+                    carsFrom.put(car.from_, carFrom);
+                }
+            }
+            // 整理一份新的发车顺序出来。
+            ArrayList<Car> newCarsOrder = new ArrayList<>();
+            while(!carsFrom.isEmpty()){
+                // 遍历一个keyset
+                ArrayList<Integer> removeIndex = new ArrayList<>();
+                for(Integer key: carsFrom.keySet()){
+                    newCarsOrder.add(carsFrom.get(key).get(0));
+                    carsFrom.get(key).remove(0);
+                    // 一次发两台车试试
+                    if(carsFrom.get(key).isEmpty()){
+                        removeIndex.add(key);
+                    }
+                    else{
+                        newCarsOrder.add(carsFrom.get(key).get(0));
+                        carsFrom.get(key).remove(0);
+                        if(carsFrom.get(key).isEmpty()){
+                            removeIndex.add(key);
+                        }
+                    }
+                }
+                for(int index: removeIndex){
+                    carsFrom.remove(index);
+                }
+            }
+            newCarsArray.add(newCarsOrder);
+        }
+
+        // 按照不同的顺序间隔发车
+        // 改动一下发车的顺序，快慢交替发车，目前先随机
+        // int speedTypes = newCarsArray.size();
+        // for(int i = 1; i < speedTypes; ++i){
+        //     newCarsArray.get(0).addAll(newCarsArray.get(i));
+            
+        // }
+        // Collections.shuffle(newCarsArray.get(0));
+        // // 删除原来的
+        // for(int i = speedTypes-1; i >0; --i){
+        //     newCarsArray.remove(i);
+        // }
+        return newCarsArray;
     }
 
-    // 按照出发点和速度分割车，尽可能使得每个点的发车均衡。
-    // 还是按照速度分割，但是速度相同的车按照不同的出发点进行排列。然后轮询不同的路口进行顺序发车
-}
+ }
 

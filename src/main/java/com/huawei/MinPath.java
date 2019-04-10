@@ -41,7 +41,9 @@ public class MinPath {
 
         // 找出最大的顶点的索引值,最大CrossID
         int maxIndex = Collections.max(graph.GetV());
-
+        // 找出最大的顶点的索引值
+        // 这里初始值是false吗？
+        boolean[] marked = new boolean[maxIndex+1];
         boolean IsFinded = false;
 
         // 记录RoadId的hashmap， <CrossID, Road>这样保存
@@ -50,14 +52,14 @@ public class MinPath {
         LinkedList<Road> queue = new LinkedList<>();
 
         //记录原点到各点的最短距离
-        int[] MinLength = new int[maxIndex+1];
+       // int[] MinLength = new int[maxIndex+1];
         //记录原点到各定点的时间
         int[] MinTime = new int[maxIndex+1];
-        for(int i = 0; i<MinLength.length; i++){
-            MinLength[i] = Integer.MAX_VALUE;
+        for(int i = 0; i<MinTime.length; i++){
+            //MinLength[i] = Integer.MAX_VALUE;
             MinTime[i] = Integer.MAX_VALUE;
         }
-        MinLength[car.from_] = 0;    //原点到自己的距离为0
+        //MinLength[car.from_] = 0;    //原点到自己的距离为0
         MinTime[car.from_] = 0;
 
         // 将起点的邻接边加入到队列
@@ -65,7 +67,8 @@ public class MinPath {
         for (Road road: graph.Adj(car.from_)) {
             queue.add(road);
             //标记原点到第一层定点的距离
-            MinLength[road.to_] = road.getLength_();
+            //MinLength[road.to_] = road.getLength_();
+            marked[road.to_] = true;
             MinTime[road.to_] = Time + (int)((float)road.length_ / Math.min(car.speed_, road.speed_) + 1);
             edgeTo.put(road.to_, road);
         }
@@ -85,7 +88,7 @@ public class MinPath {
                 for(int i = MinTime[outRoad.from_]; i <= MinTime[outRoad.from_] + (int)((float)outRoad.length_ / Math.min(car.speed_, outRoad.speed_) + 1); i++){
 //                    int roadCondition = RoadCondition.get(i);
                     //如果发现某个时刻车的数量超出预定值，则此路不通
-                    if(RoadCondition.get(i) != null && RoadCondition.get(i) > (int)(outRoad.length_ * outRoad.channel_ * p)){
+                    if(RoadCondition.get(i) != null && RoadCondition.get(i) > (int)(outRoad.length_ *outRoad.channel_ * p)){
                         flag = false;
                         break;
                     }
@@ -97,21 +100,24 @@ public class MinPath {
 
                 //如果发现更短的路径，则更改路径
                 //第一次访问的定点的路劲是最长的
-                if(MinLength[tmp_to] > MinLength[outRoad.from_] + outRoad.getLength_()){
+                //if(MinLength[tmp_to] > MinLength[outRoad.from_] + outRoad.getLength_()){
                     //如果顶点是第一次访问的话，就需要将顶点推入队列, 或顶点有新的更短的路径
+                if(!marked[tmp_to]){
                     queue.add(outRoad);
                     //更改原点到改点的距离
-                    MinLength[tmp_to] = MinLength[outRoad.from_] + outRoad.getLength_();
+                    //MinLength[tmp_to] = MinLength[outRoad.from_] + outRoad.getLength_();
                     MinTime[tmp_to] = MinTime[outRoad.from_] + (int)((float)outRoad.length_ / Math.min(car.speed_, outRoad.speed_) + 1);
                     // 更改路劲RoadId,移除旧路线
                     //不能用replace, 因为如果是新路径的话就不能添加了
-                    edgeTo.remove(outRoad.to_);
+                    //edgeTo.remove(outRoad.to_);
+                    marked[tmp_to] = true;
                     edgeTo.put(outRoad.to_, outRoad);
 
                     if(tmp_to == car.to_){
                         IsFinded = true;
                     }
                 }
+              // }
             }
         }
         //如果找到路劲，就返回路径，否者，返回null
@@ -132,6 +138,9 @@ public class MinPath {
                 //添加路径
                 path.add(edgeTo.get(tmp).id_);
                 tmp = edgeTo.get(tmp).from_;
+                if(tmp == car.from_){
+                    break;
+                }
             }
             //反向后返回路径
             Collections.reverse(path);
@@ -155,7 +164,7 @@ public class MinPath {
                 Integer roadID = presetPath.get(i);
                 Road road = allRoad_.roadsMap_.get(roadID);
                 HashMap<Integer, Integer> roadcondition = IsCongestion.get(roadID);
-                for (int j = presetTime; j <= presetTime + (int)((float)road.length_ / Math.min(car.speed_, road.speed_) + 1); j++){
+                for (int j = presetTime; j <= presetTime + (int)((float)road.length_*4 / Math.min(car.speed_, road.speed_) + 1); j++){
                     if(roadcondition.get(j) != null){
                         roadcondition.replace(j, roadcondition.get(j) + 1);
                     }else {

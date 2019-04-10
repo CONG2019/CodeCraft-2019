@@ -41,7 +41,7 @@ public class BFSSolution {
         bfsPath_ = new ArrayList<>();
         // 对每个点都进行一次寻路
         for (Integer crossId: graph_.GetV()
-             ) {
+        ) {
             BFS(crossId);
         }
     }

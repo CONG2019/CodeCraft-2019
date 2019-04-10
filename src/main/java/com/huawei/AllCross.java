@@ -10,7 +10,7 @@ public class AllCross {
     public ArrayList<Cross> cross_;
     public HashMap<Integer, Cross> crossMap_;
     // 通过传入的文件名读入参数
-    public void Init(String roadFileName) {
+    public void Init(String roadFileName, AllRoad allRoad) {
         cross_ = new ArrayList<>();
         crossMap_ = new HashMap<>();
         // 打开文件
@@ -28,7 +28,7 @@ public class AllCross {
                     str = str.replace(" ", "");
                     String[] cross = str.split(",");
                     // 添加新的道路进去
-                    Cross oneCross = new Cross(cross);
+                    Cross oneCross = new Cross(cross, allRoad);
                     cross_.add(oneCross);
                     crossMap_.put(oneCross.id_, oneCross);
                 }

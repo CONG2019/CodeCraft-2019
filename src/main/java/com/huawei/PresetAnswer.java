@@ -43,6 +43,7 @@ public class PresetAnswer {
                     }
                     // 添加到集合
                     presetCarIds_.add(answer.get(0));
+                    presetAnswer_.add(answer);
                 }
             }
             bufferedReader.close();
