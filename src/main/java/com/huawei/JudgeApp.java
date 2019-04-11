@@ -30,7 +30,8 @@ public class JudgeApp {
         this.allCar = allCar;
         this.allRoad = allRoad;
         this.allCross = allCross;
-        this.answer= allAnswer;
+        this.answer= new ArrayList<>();
+        answer.addAll(allAnswer);
         this.presetAnswer = presetAnswer;
         this.graph = graph;
         time_ = 0;
@@ -886,8 +887,8 @@ public class JudgeApp {
             //在某次调度，所有等待车辆都没有移动，说明出现死锁，
             //找出死锁车辆，死锁路和死锁路口
             ArrayList<Integer> deakLockCars = new ArrayList<>();
-            ArrayList<Cross> deakLockCrosses = new ArrayList<>();
-            ArrayList<Road> deakLockRoads = new ArrayList<>();
+            ArrayList<Integer> deakLockCrosses = new ArrayList<>();
+            ArrayList<Integer> deakLockRoads = new ArrayList<>();
             for (Car car: allCar.cars_
             ) {
                 if(car.state_ == 1){
@@ -900,20 +901,22 @@ public class JudgeApp {
 //                    if(!deakLockCrosses.contains(car.path_.peek().to_)){
 //                        deakLockCrosses.add(car.path_.peek().to_);
 //                    }
-                    if(!deakLockRoads.contains(car.path_.peek())){
-                        deakLockRoads.add(car.path_.peek());
+                    if(!deakLockRoads.contains(car.path_.peek().id_)){
+                        deakLockRoads.add(car.path_.peek().id_);
                     }
-                    if(!deakLockCrosses.contains(allCross.crossMap_.get(car.path_.peek().to_))){
-                        deakLockCrosses.add(allCross.crossMap_.get(car.path_.peek().to_));
+                    if(!deakLockCrosses.contains(allCross.crossMap_.get(car.path_.peek().to_).id_)){
+                        deakLockCrosses.add(allCross.crossMap_.get(car.path_.peek().to_).id_);
                     }
                 }
             }
             ArrayList<Integer> isdeakLock_ = new ArrayList<>();
-//            isdeakLock_.addAll(deakLockCrosses);
-//            isdeakLock_.add(0);
-//            isdeakLock_.addAll(deakLockRoads);
-//            isdeakLock_.add(0);
-//            isdeakLock_.addAll(deakLockCars);
+            isdeakLock_.addAll(deakLockCrosses);
+            isdeakLock_.add(0);
+            isdeakLock_.addAll(deakLockRoads);
+            isdeakLock_.add(0);
+            isdeakLock_.addAll(deakLockCars);
+            isdeakLock_.add(0);
+            isdeakLock_.add(time_);
             System.out.println("deakLock!");
             System.out.println("Cross: " + deakLockCrosses.size() + " Road: " + deakLockRoads.size() + " cars: " +deakLockCars.size());
             return isdeakLock_;
@@ -1072,12 +1075,12 @@ public class JudgeApp {
             allCarNumber++;
             Tsum += (car.FinishTime_ - car.StartTime_);
             //找所有车的最小出发时间
-            if(allCarMinStartTime > car.StartTime_){
-                allCarMinStartTime = car.StartTime_;
+            if(allCarMinStartTime > car.planTime_){
+                allCarMinStartTime = car.planTime_;
             }
             //找所有车的最大出发时间
-            if(allCarMaxStartTime < car.StartTime_){
-                allCarMaxStartTime = car.StartTime_;
+            if(allCarMaxStartTime < car.planTime_){
+                allCarMaxStartTime = car.planTime_;
             }
             //所有车最大速度
             if(allcarMaxSpeed < car.speed_){
@@ -1095,12 +1098,12 @@ public class JudgeApp {
                 //优先车总数自加1
                 priorityCarNumber++;
                 //找最小出发时间
-                if(car.StartTime_ < minStartTime){
-                    minStartTime = car.StartTime_;
+                if(car.planTime_ < minStartTime){
+                    minStartTime = car.planTime_;
                 }
                 //优先车的最大出发时间
-                if(priorityCarMaxStartTime < car.StartTime_){
-                    priorityCarMaxStartTime = car.StartTime_;
+                if(priorityCarMaxStartTime < car.planTime_){
+                    priorityCarMaxStartTime = car.planTime_;
                 }
                 //找最大到达时间
                 if (car.FinishTime_ > maxFinshTime){

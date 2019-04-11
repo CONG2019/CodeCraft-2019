@@ -19,9 +19,11 @@ public class BFSSolution {
     public AllRoad allRoad_;
     //保存某时刻路上车的数量，HashMap<RoadID, HashMap<Time, Number>>
     private HashMap<Integer, HashMap<Integer, Integer>> isCongestion_;
+    // 记录每次搜索的时候不能走的路
+    private HashSet<Integer> forbidRoadIds_;
     // 寻路的时间起点和时间间隔
     private Integer startTime_ = 0;
-    private Integer interval_ = 0;
+    // private Integer interval_ = 0;
     private double para_ = 0.0;
 
     private Graph graph_;
@@ -33,10 +35,10 @@ public class BFSSolution {
     }
 
     // 每次getpath都会新建新的
-    public void GetPaths(Integer startTime, Integer interval, double godPara){
+    public void GetPaths(Integer startTime,double godPara, HashSet<Integer> forbidRoadIds){
         startTime_ = startTime;
-        interval_ = interval;
         para_ = godPara;
+        forbidRoadIds_ = forbidRoadIds;
         path_ = new HashMap<>();
         bfsPath_ = new ArrayList<>();
         // 对每个点都进行一次寻路
@@ -80,10 +82,13 @@ public class BFSSolution {
             for (Road outRoad: graph_.Adj(to)) {
                 int tmp_to = outRoad.to_;
                 if(!marked[tmp_to]){
+                    if(forbidRoadIds_.contains(outRoad.id_)){
+                        continue;
+                    }
                     boolean flag = true;
                     HashMap<Integer, Integer> roadCondition = isCongestion_.get(outRoad.id_);
-                    // 检查接下来的一段时间是否会堵塞
-                    for(int i = startTime_; i < (startTime_+interval_); ++i){
+                    // 检查接下来的一段时间是否会堵塞,这里采用粗略计算的方式
+                    for(int i = startTime_; i < (startTime_+(int)((float)outRoad.length_ / outRoad.speed_) + 1); ++i){
                         if(roadCondition.get(i) != null && roadCondition.get(i) > (int)(outRoad.channel_*outRoad.length_*para_)){
                             flag = false;
                             break;

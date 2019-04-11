@@ -52,7 +52,8 @@ public class Road implements Comparable<Road>{
 
     public int getLength_(){
         // 路上的车越多权重越大
-        return (int)((float)(cars_ / length_ * channel_ * 3 + 1) * length_);
+        // return (int)((float)(cars_ / length_ * channel_ * 3 + 1) * length_);
+        return 2*length_/speed_;
     }
 
     //这里创建优先队列把下一时刻不能出路口的车都添加都队列里了，这里可以通过后面的单独跑一条车道的车进行处理

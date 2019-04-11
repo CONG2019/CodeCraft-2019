@@ -31,6 +31,9 @@ public class MinPath {
 
     //保存某时刻路上车的数量，HashMap<RoadID, HashMap<Time, Number>>
     private HashMap<Integer, HashMap<Integer, Integer>> IsCongestion;
+    public HashMap<Integer, HashMap<Integer, Integer>> GetIsCongestion(){
+        return IsCongestion;
+    }
     //创建一个车队列，优先为没有成功安排路线的车安排路线
     private ArrayList<Car> CarList = new ArrayList<>();
     /*
@@ -52,7 +55,7 @@ public class MinPath {
         LinkedList<Road> queue = new LinkedList<>();
 
         //记录原点到各点的最短距离
-       // int[] MinLength = new int[maxIndex+1];
+       //int[] MinLength = new int[maxIndex+1];
         //记录原点到各定点的时间
         int[] MinTime = new int[maxIndex+1];
         for(int i = 0; i<MinTime.length; i++){
@@ -88,7 +91,7 @@ public class MinPath {
                 for(int i = MinTime[outRoad.from_]; i <= MinTime[outRoad.from_] + (int)((float)outRoad.length_ / Math.min(car.speed_, outRoad.speed_) + 1); i++){
 //                    int roadCondition = RoadCondition.get(i);
                     //如果发现某个时刻车的数量超出预定值，则此路不通
-                    if(RoadCondition.get(i) != null && RoadCondition.get(i) > (int)(outRoad.length_ *outRoad.channel_ * p)){
+                    if(RoadCondition.get(i) != null && RoadCondition.get(i) > (int)(outRoad.length_ * outRoad.channel_ * p)){
                         flag = false;
                         break;
                     }
@@ -116,8 +119,8 @@ public class MinPath {
                     if(tmp_to == car.to_){
                         IsFinded = true;
                     }
-                }
-              // }
+                //}
+              }
             }
         }
         //如果找到路劲，就返回路径，否者，返回null
@@ -153,7 +156,6 @@ public class MinPath {
     //道路状况初始化
     public void IsCongestion_Init(PresetAnswer presetAnswer, AllCar allCar){
         //保存某时刻路上车的数量，HashMap<RoadID, HashMap<Time, Number>>
-
         for (ArrayList<Integer> presetPath: presetAnswer.presetAnswer_
         ) {
             Integer carID = presetPath.get(0);

@@ -95,7 +95,7 @@ public class GraphAverage {
         double godPara = 0.3;
         for(int startTime = 800; startTime < latestTime; startTime += interval){
             // 搜索一次路径出来
-            bfsSolution.GetPaths(startTime, interval, godPara);
+            bfsSolution.GetPaths(startTime, interval, godPara, new HashSet<>());
             // 对于每一条路
 
             for(Integer from: bfsSolution.path_.keySet()){
