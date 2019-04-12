@@ -21,29 +21,29 @@ public class Scheduler {
             if(isPriority){
                 //PRENUMBER = 6;
                 //NUMBER = 100;
-                PRENUMBER = 6;
-                NUMBER = 200;
+                PRENUMBER = 60;
+                NUMBER = 130;
             }
             else{
                 //PRENUMBER = 4;
                 //NUMBER = 42;
-                PRENUMBER = 6;
-                NUMBER = 100;
+                PRENUMBER = 60;
+                NUMBER = 115;
             }
         }
         else{
 //            System.out.print("It's map2!\n");
             if(isPriority){
                 //PRENUMBER = 6;
-                PRENUMBER = 7;
-                NUMBER = 106;
+                PRENUMBER = 60;
+                NUMBER = 130;
                 //NUMBER = 135;
             }
             else{
                 //PRENUMBER = 4;
                 //NUMBER = 63;
-                PRENUMBER = 6;
-                NUMBER = 85;
+                PRENUMBER = 60;
+                NUMBER = 120;
             }
         }
         //初始化预置车每时刻的发车数
@@ -166,6 +166,9 @@ public class Scheduler {
                 if((startTime >=750 && number > NUMBER) || (startTime < 750 && number > PRENUMBER)){
 //                    number = 0;
                     startTime += 2;
+                    if(startTime < 750 && PRENUMBER > 10){
+                        PRENUMBER--;
+                    }
                     //强行将发车数近似变为线性发车
 //                    if(CarNumber.get(startTime) != null){
 //                        number = CarNumber.get(startTime) % NUMBER;

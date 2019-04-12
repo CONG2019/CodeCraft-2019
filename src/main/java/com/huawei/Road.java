@@ -12,7 +12,7 @@ public class Road implements Comparable<Road>{
         from_ = Integer.parseInt(roadStr[4]);
         to_ = Integer.parseInt(roadStr[5]);
         isDuplex_ = Integer.parseInt(roadStr[6]);
-        roadLength_ = length_/(speed_+channel_) + 1;
+        roadLength_ = 2*length_/speed_ + 1;
         //roadLength_ = length_/channel_+1;
         // 最大容纳的车辆数是长度乘上车道
         maxCars_ = length_*channel_;

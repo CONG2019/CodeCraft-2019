@@ -6,6 +6,7 @@ import edu.princeton.cs.algs4.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 
 // 每个点套用一次dijkstra算法
 public class Dijkstra {
@@ -15,12 +16,26 @@ public class Dijkstra {
 
     private AllRoad allRoad_;
 
-    public Dijkstra(AllRoad allRoad){
+    //保存某时刻路上车的数量，HashMap<RoadID, HashMap<Time, Number>>
+    private HashMap<Integer, HashMap<Integer, Integer>> isCongestion_;
+    // 记录每次搜索的时候不能走的路
+    private HashSet<Integer> forbidRoadIds_;
+    // 寻路的时间起点和时间间隔
+    private Integer startTime_ = 0;
+    // private Integer interval_ = 0;
+    private double para_ = 0.0;
+
+
+    public Dijkstra(AllRoad allRoad, HashMap<Integer, HashMap<Integer, Integer>> isCongestion){
         allRoad_ = allRoad;
+        isCongestion_ = isCongestion;
     }
 
     // 获得最短路径
-    public void GetShortPath(Graph graph){
+    public void GetShortPath(Graph graph, Integer startTime,double godPara, HashSet<Integer> forbidRoadIds){
+        startTime_ = startTime;
+        para_ = godPara;
+        forbidRoadIds_ = forbidRoadIds;
         path_ = new HashMap<>();
         // 对每个点都进行一次寻路
         for (Integer crossId: graph.GetV()
@@ -52,6 +67,22 @@ public class Dijkstra {
     private void Relax(Graph graph, int v, HashMap<Integer, Integer> distTo, HashMap<Integer, Integer> edgeTo, IndexMinPQ<Integer> pq){
         // 对该点出发的邻边，如果可以使其他路径变短，则更新
         for(Road road: graph.Adj(v)){
+            if (forbidRoadIds_.contains(road.id_)) {
+                continue;
+            }
+            boolean flag = true;
+            HashMap<Integer, Integer> roadCondition = isCongestion_.get(road.id_);
+            // 检查接下来的一段时间是否会堵塞,这里采用粗略计算的方式
+            for(int i = startTime_; i < (startTime_+(int)((float)road.length_ / road.speed_) + 1); ++i){
+                if(roadCondition.get(i) != null && roadCondition.get(i) > (int)(road.channel_*road.length_*para_)){
+                    flag = false;
+                    break;
+                }
+            }
+            // 此路不能经过。
+            if(!flag){
+                continue;
+            }
             int to = road.to_;
             if(distTo.get(to) > (distTo.get(v)+road.roadLength_)){
                 // 更新最短路径的长度

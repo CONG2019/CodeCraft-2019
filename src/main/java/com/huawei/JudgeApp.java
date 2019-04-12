@@ -185,7 +185,7 @@ public class JudgeApp {
                 break;
             }
 
-           WriteRoadsInfo();
+           //WriteRoadsInfo();
         }
         //所有车到达目的地
         return null;

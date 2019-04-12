@@ -21,11 +21,11 @@ public class MinPath {
 
         if(allCross.crossMap_.containsKey(22)){
 //            System.out.print("It's map1!\n");
-            p = 0.5;
+            p = 1.0;
         }
         else{
 //            System.out.print("It's map2!\n");
-            p = 0.5;
+            p = 1.0;
         }
     }
 

@@ -83,7 +83,9 @@ public class Main {
 
 
         // 初始化一个用于调整路径的bfs
-        BFSSolution adjustPath = new BFSSolution(allRoad, bfsSolution.GetIsCongestion(), graph);
+        //BFSSolution adjustPath = new BFSSolution(allRoad, bfsSolution.GetIsCongestion(), graph);
+        // 初始化一个用于调整路径的dijkstra
+        Dijkstra adjustDij = new Dijkstra(allRoad, bfsSolution.GetIsCongestion());
         //迭代运行判题器
         while(true){
             JudgeApp judgeApp = new JudgeApp(allCar, allRoad, allCross, allAnswer, presetAnswer, graph);
@@ -94,7 +96,7 @@ public class Main {
                 // 发生死锁，取出死锁的路口，路和车
                 HashSet<Integer> deadLockCrossId = new HashSet<>();
                 HashSet<Integer> deadLockRoadId = new HashSet<>();
-                HashSet<Integer> deadLockCarId = new HashSet<>();
+                ArrayList<Integer> deadLockCarId = new ArrayList<>();
                 int deadLockTime = 0;
                 int index = 0;
                 for(int i = 0; i < deadlockIds.size(); i++){
@@ -118,8 +120,59 @@ public class Main {
                 }
 
                 // 调用一次bfs进行寻路。
-                
+                //adjustPath.GetPaths(deadLockTime, 1, deadLockRoadId);
+                //HashMap<Integer, HashMap<Integer, ArrayList<Integer>>> newPaths = adjustPath.path_;
 
+                // 调用dij求最短路径。
+                adjustDij.GetShortPath(graph, deadLockTime, 1, deadLockRoadId);
+                HashMap<Integer, HashMap<Integer, ArrayList<Integer>>> newPaths = adjustDij.path_;
+                int proportion;
+                int timePreset;
+                int time;
+                if(deadLockTime > 1000){
+                    timePreset = 0;
+                    proportion = 3;
+                    time = 10;
+                }
+                else{
+                    proportion = 1;
+                    timePreset = 1;
+                    time = -10;
+                }
+
+                int toChangeCars = deadLockCarId.size() / proportion;
+                // 对每一辆车进行
+                for(int i = 0; i < toChangeCars; ++i){
+                    // 判断是否预置车
+                    if(CarIdToIndex.containsKey(deadLockCarId.get(i))){
+                        // 找到car
+                        Car toChangeCar = allCar.carsMap_.get(deadLockCarId.get(i));
+                        // 查看是否在路径中
+                        if(newPaths.containsKey(toChangeCar.from_)){
+                            // 是否能找到路
+                            ArrayList<Integer> newPath = newPaths.get(toChangeCar.from_).get(toChangeCar.to_);
+                            if( newPath != null){
+                                // 新建路径并替换
+                                ArrayList<Integer> toChangePath = new ArrayList<>();
+                                toChangePath.add(toChangeCar.id_);
+                                // 还是按照原来的出发时间
+                                toChangePath.add(allAnswer.get(CarIdToIndex.get(toChangeCar.id_)).get(1)+timePreset);
+                                toChangePath.addAll(newPath);
+                                allAnswer.set(CarIdToIndex.get(toChangeCar.id_), toChangePath);
+                            }
+                            // 如果找不到路径则改变一下时间
+                            else{
+                                ArrayList<Integer> path = allAnswer.get(CarIdToIndex.get(toChangeCar.id_));
+                                path.set(1, Math.max(path.get(1)-time, toChangeCar.planTime_));
+                            }
+                        }
+                        // 这个种情况也是找不到
+                        else{
+                            ArrayList<Integer> path = allAnswer.get(CarIdToIndex.get(toChangeCar.id_));
+                            path.set(1, Math.max(path.get(1)-time, toChangeCar.planTime_));
+                        }
+                    }
+                }
             }
             else{
                 break;
