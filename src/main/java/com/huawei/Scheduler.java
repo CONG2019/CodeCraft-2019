@@ -1,7 +1,5 @@
 package com.huawei;
-
-import edu.princeton.cs.algs4.In;
-
+import java.lang.reflect.Array;
 import java.util.*;
 
 // 调度器类，负责进行车辆的调度
@@ -13,39 +11,17 @@ public class Scheduler {
     //
     private int NUMBER;
     private int PRENUMBER;
+    // 一个用于记录禁止进入路径的set
+    private HashSet<Integer> forbidRoads_;
+    public HashSet<Integer> saveForbidRoads_;
     //增加一个统计某时刻总发车数量的HashMap
     HashMap<Integer, Integer> CarNumber;
     public Scheduler(AllCross allCross, PresetAnswer presetAnswer, boolean isPriority){
-        if(allCross.crossMap_.containsKey(22)){
-//            System.out.print("It's map1!\n");
+        answer = new ArrayList<>();
             if(isPriority){
-                //PRENUMBER = 6;
-                //NUMBER = 100;
-                PRENUMBER = 60;
-                NUMBER = 130;
-            }
-            else{
-                //PRENUMBER = 4;
-                //NUMBER = 42;
-                PRENUMBER = 60;
-                NUMBER = 115;
-            }
-        }
-        else{
-//            System.out.print("It's map2!\n");
-            if(isPriority){
-                //PRENUMBER = 6;
-                PRENUMBER = 60;
-                NUMBER = 130;
-                //NUMBER = 135;
-            }
-            else{
-                //PRENUMBER = 4;
-                //NUMBER = 63;
-                PRENUMBER = 60;
+                PRENUMBER = 65;
                 NUMBER = 120;
             }
-        }
         //初始化预置车每时刻的发车数
         CarNumber = new HashMap<>();
         for (ArrayList<Integer> presetCar: presetAnswer.presetAnswer_
@@ -58,43 +34,8 @@ public class Scheduler {
         }
     }
 
-    /*
-       第一个方法，每隔一秒放入一辆车，不考虑任何情况，在BFSSolution中寻找车辆起点到终点的方案。
-     */
-    public int SimpleSchedule(AllCar allCar, HashMap<Integer, HashMap<Integer, ArrayList<Integer>>> path, HashMap<Integer, HashMap<Integer, ArrayList<Integer>>> dijPath) {
-        // 先对车辆按照触发时间进行排序
-        Collections.sort(allCar.cars_);
-        // 逐辆车进行调度，每个时间单位只走一个车
-        int startTime = 1;
-        int count = 1;
-        answer = new ArrayList<>();
-        for (Car car : allCar.cars_
-        ) {
-            // 先保存车辆id和实际安排的出发时间
-            ArrayList<Integer> carSchedule = new ArrayList<>();
-            carSchedule.add(car.id_);
-            carSchedule.add(Math.max(startTime, car.planTime_));
-            carSchedule.addAll(path.get(car.from_).get(car.to_));
-            // 根据每台车的起始点和终点查找路径
-//            if(car.id_ % 2 == 0){
-//                carSchedule.addAll(path.get(car.from_).get(car.to_));
-//            }
-//            else{
-//                carSchedule.addAll(dijPath.get(car.from_).get(car.to_));
-//                //continue;
-//            }
-            // 下一台车在出发
-            if (count == 18) {
-                ++startTime;
-                count = 1;
-            }
-            ++count;
-            answer.add(carSchedule);
-        }
-        return startTime;
-    }
 
-    public int Schedule(AllCar allCar, MinPath bfsSolution, Graph graph, AllRoad allRoad, int startTime){
+    public int Schedule(ArrayList<Car> allCar, MinPath bfsSolution, Graph graph,int startTime){
         //ArrayList<ArrayList<Car>> carsArray = SplitCars(allCar);
         ArrayList<ArrayList<Car>> carsArray = SplitCarsOnCross(allCar);
         //保存还没有成功安排路径的车
@@ -102,9 +43,9 @@ public class Scheduler {
         // 足够的startTime让车辆先走。
         // int startTime = 900;
         int number = 0;
-//        int j = 0;
-//        bfsSolution.GetPaths(graph);
-        answer = new ArrayList<>();
+
+
+        //answer = new ArrayList<>();
         //创建一个car集合，用于保存重新分配路径成功的车辆
         ArrayList<Car> Cars_ = new ArrayList<>();
         //每辆车重新根据路况计算一次最短路径
@@ -116,13 +57,10 @@ public class Scheduler {
                 if(car.preset_ == 1){
                     continue;
                 }
-                //根据车速对发车数进行调整
-                // int NUMBER;     //记录同时发车的数量
-                // NUMBER = 28;
                 //每次发下一辆车试，优先发上一次没有发成功的车
                 for (Car car_: queue
                 ) {
-                    ArrayList<Integer> tmp = bfsSolution.SuitablePath(graph, car_, startTime);
+                    ArrayList<Integer> tmp = bfsSolution.SuitablePath(graph, car_, startTime, forbidRoads_);
                     //如果找到路径，则优先为这台车按排路径
                     if(tmp != null){
                         ArrayList<Integer> carSchedule_ = new ArrayList<>();
@@ -143,7 +81,7 @@ public class Scheduler {
                 carSchedule.add(car.id_);
                 carSchedule.add(Math.max(startTime, car.planTime_));
                 // 根据每台车的起始点和终点查找路径
-                ArrayList<Integer> tmp = bfsSolution.SuitablePath(graph, car, startTime);
+                ArrayList<Integer> tmp = bfsSolution.SuitablePath(graph, car, startTime, forbidRoads_);
                 if(tmp != null){
                     carSchedule.addAll(tmp);
                     answer.add(carSchedule);
@@ -151,50 +89,31 @@ public class Scheduler {
                 }else {
                     queue.add(car);
                 }
-                // 下一台车在出发
-//                for (Integer roadID: (bfsSolution.Path_.get(car.from_).get(car.to_)
-//                ) ){
-//                    HashMap<Integer, Road> Roads_ = allRoad.roadsMap_;
-//                    Road road = Roads_.get(roadID);
-//                    road.cars_++;
-//                }
-                // 目前先隔秒发车，试一试答案。
-//                if(number >= (int)(NUMBER + 8 / car.speed_ + 0.5)){
-//                    ++startTime;
-//                    number = 0;
-//                }
-                if((startTime >=750 && number > NUMBER) || (startTime < 750 && number > PRENUMBER)){
-//                    number = 0;
+                //if((startTime >=350 && number > NUMBER) || (startTime < 750 && number > PRENUMBER)){
+                if(number > NUMBER){
                     startTime += 2;
-                    if(startTime < 750 && PRENUMBER > 10){
-                        PRENUMBER--;
-                    }
-                    //强行将发车数近似变为线性发车
-//                    if(CarNumber.get(startTime) != null){
-//                        number = CarNumber.get(startTime) % NUMBER;
-//                        startTime = startTime + CarNumber.get(startTime) / NUMBER;
+//                    if(startTime < 750 && PRENUMBER > 10){
+//                        PRENUMBER--;
+//                    }
+//                    if(startTime > 950){
+//                        NUMBER = 130;
+//                    }
+                    number = 0;
+                    //在大量发车前后空出一定时间不发车
+//                    if(CarNumber.get(startTime + 2) != null && CarNumber.get(startTime + 2) > 2 * NUMBER){
+//                        number = 0;
+//                        startTime = startTime + CarNumber.get(startTime+2) / NUMBER + 8;
 //                    }else{
 //                        number = 0;
 //                    }
-                    //在大量发车前后空出一定时间不发车
-                    if(CarNumber.get(startTime + 2) != null && CarNumber.get(startTime + 2) > 2 * NUMBER){
-                        number = 0;
-                        startTime = startTime + CarNumber.get(startTime+2) / NUMBER + 8;
-                    }else{
-                        number = 0;
-                    }
                 }
             }
-
-            // 车速降低一级，发车量减少。
-           // NUMBER -= 10;
-            //startTime++;
         }
         while (!queue.isEmpty()){
             startTime++;
             for (Car car_: queue
             ) {
-                ArrayList<Integer> tmp = bfsSolution.SuitablePath(graph, car_, startTime);
+                ArrayList<Integer> tmp = bfsSolution.SuitablePath(graph, car_, startTime,forbidRoads_);
                 if(tmp != null){
                     ArrayList<Integer> carSchedule_ = new ArrayList<>();
                     carSchedule_.add(car_.id_);
@@ -211,15 +130,15 @@ public class Scheduler {
     }
 
     // 按照速度分割车
-    public ArrayList<ArrayList<Car>> SplitCars(AllCar allCar){
+    public ArrayList<ArrayList<Car>> SplitCars(ArrayList<Car> allCar){
         ArrayList<ArrayList<Car>> carsArray = new ArrayList<>();
         //将车按降序排序int carId = sameSpeedCars.get(j).id_;
-        Collections.sort(allCar.cars_, (car1, car2)->
+        Collections.sort(allCar, (car1, car2)->
                 car2.speed_ - car1.speed_);
 
-        int speed = allCar.cars_.get(0).speed_;
+        int speed = allCar.get(0).speed_;
         ArrayList<Car> carArrayList = new ArrayList<>();
-        for (Car car: allCar.cars_
+        for (Car car: allCar
         ) {
             if(car.speed_ == speed){
                 carArrayList.add(car);
@@ -282,33 +201,20 @@ public class Scheduler {
             }
             newCarsArray.add(newCarsOrder);
         }
-
-        // 按照不同的顺序间隔发车
-        // 改动一下发车的顺序，快慢交替发车，目前先随机
-        // int speedTypes = newCarsArray.size();
-        // for(int i = 1; i < speedTypes; ++i){
-        //     newCarsArray.get(0).addAll(newCarsArray.get(i));
-            
-        // }
-        // Collections.shuffle(newCarsArray.get(0));
-        // // 删除原来的
-        // for(int i = speedTypes-1; i >0; --i){
-        //     newCarsArray.remove(i);
-        // }
         return newCarsArray;
     }
 
 
     // 新的发车策略，分组进行发车，根据from和to进行分组
-    public ArrayList<ArrayList<Car>> SplitCarsOnCross(AllCar allCar) {
+    public ArrayList<ArrayList<Car>> SplitCarsOnCross(ArrayList<Car> allCar) {
         ArrayList<ArrayList<Car>> carsArray = new ArrayList<>();
         //将车按降序排序int carId = sameSpeedCars.get(j).id_;
-        Collections.sort(allCar.cars_, (car1, car2) ->
+        Collections.sort(allCar, (car1, car2) ->
                 car2.speed_ - car1.speed_);
 
-        int speed = allCar.cars_.get(0).speed_;
+        int speed = allCar.get(0).speed_;
         ArrayList<Car> carArrayList = new ArrayList<>();
-        for (Car car : allCar.cars_
+        for (Car car : allCar
         ) {
             if (car.speed_ == speed) {
                 carArrayList.add(car);
@@ -392,6 +298,136 @@ public class Scheduler {
             }
         }
         return newCarsArray;
+    }
+
+    // 先处理预置车中插入车辆的调度函数
+    public Integer InsertPresetCars(PresetAnswer preAnswer, Graph graph, MinPath minPath, AllRoad allRoad, AllCar allCar){
+        // 统计预置车每条路经过的次数, 忘记处理双向路了。
+        HashMap<Integer, Integer> counts = new HashMap<>();
+        // 记录出发到结束点的数量。
+        HashMap<Integer, HashMap<Integer, Integer>> fromToCars = new HashMap<>();
+        for(ArrayList<Integer> path: preAnswer.presetAnswer_){
+            int from = allRoad.roadsMap_.get(path.get(2)).from_;
+            int to = allRoad.roadsMap_.get(path.get(path.size()-1)).to_;
+            if(fromToCars.containsKey(from)){
+                if(fromToCars.get(from).get(to) != null){
+                    int number = fromToCars.get(from).get(to);
+                    fromToCars.get(from).put(to, number+1);
+                }
+                else{
+                    fromToCars.get(from).put(to, 1);
+                }
+            }
+            else{
+                fromToCars.put(from, new HashMap<>());
+                fromToCars.get(from).put(to, 1);
+            }
+            for(int i = 2; i < path.size(); ++i){
+                if(counts.containsKey(path.get(i))){
+                    counts.put(path.get(i), counts.get(path.get(i))+1);
+                }
+                else{
+                    counts.put(path.get(i), 1);
+                }
+            }
+        }
+
+        // 需要把hashmap根据值排序
+        // 将EntrySet转化为list
+        List<Map.Entry<Integer, Integer>> roadCountsList = new ArrayList<>(counts.entrySet());
+        for(int i = 0; i < roadCountsList.size(); ++i){
+            Road road = allRoad.roadsMap_.get(roadCountsList.get(i).getKey());
+            int value = roadCountsList.get(i).getValue();
+            roadCountsList.get(i).setValue(1000*value/road.length_/road.channel_);
+        }
+        // 转化一下数量的相对值。
+        // 排序
+        Collections.sort(roadCountsList, new Comparator<Map.Entry<Integer, Integer>>() {
+            @Override
+            public int compare(Map.Entry<Integer, Integer> integerIntegerEntry, Map.Entry<Integer, Integer> t1) {
+                return  t1.getValue() - integerIntegerEntry.getValue();
+            }
+        });
+        // 一个禁止路的比例
+        int proportion = 5;
+        HashSet<Integer> forbiRoadIds = new HashSet<>();
+        for(int i = 0; i < roadCountsList.size() / 5; ++i){
+            forbiRoadIds.add(roadCountsList.get(i).getKey());
+            forbiRoadIds.add(-roadCountsList.get(i).getKey());
+        }
+        saveForbidRoads_ = new HashSet<>(forbiRoadIds);
+        // 开始进行预置车中间插入车的操作
+        ArrayList<Car> cars = allCar.waitCars_;
+        //将车按降序排序 忽略
+        Collections.sort(cars);
+        // 一个数组保存还没有安排路径的车，　顺便对车分一下组
+        ArrayList<Car> noPathPriCars = new ArrayList<>();
+        ArrayList<Car> noPathCommonCars = new ArrayList<>();
+        ArrayList<Car> priCars = new ArrayList<>();
+        int preSetEarlyTime = Integer.MAX_VALUE;
+        // 分成两组车，只把优先慢车插到前面去。
+        for(int i = 0; i < cars.size(); ++i){
+            Car car = cars.get(i);
+            if(car.preset_ == 1){
+                if(car.planTime_ < preSetEarlyTime){
+                    preSetEarlyTime = car.planTime_;
+                }
+                continue;
+            }
+            if(car.priority_ == 1){
+                priCars.add(car);
+            }
+            else{
+                noPathCommonCars.add(car);
+            }
+        }
+        Collections.reverse(priCars);
+        int startTime = 1;
+        // 十个时间片作为缓冲
+        int endTime = preAnswer.endTime ;
+        // 每秒的发车量, 可以加大
+        int carsPerSecond = 22;
+        int number = 0;
+        HashSet<Integer> timeSet = preAnswer.timeSet_;
+        int index = 0;
+        for(int i = 0; i < priCars.size(); ++i){
+            Car car = priCars.get(i);
+            // 根据每台车的起始点和终点查找路径
+            ArrayList<Integer> path = minPath.SuitablePath(graph, car, startTime, forbiRoadIds);
+            if(path != null){
+                ArrayList<Integer> carSchedule = new ArrayList<>();
+                carSchedule.add(car.id_);
+                carSchedule.add(Math.max(startTime, car.planTime_));
+                carSchedule.addAll(path);
+                answer.add(carSchedule);
+                number++;
+            }
+            // 找不到则加入到后面
+            else {
+                    noPathPriCars.add(car);
+            }
+            // 更改starTime和提前退出
+            index = i;
+            if(number > carsPerSecond){
+                ++startTime;
+                number = 0;
+            }
+            if(startTime > endTime){
+                break;
+            }
+        }
+        for(int i = index+1; i < priCars.size(); ++i){
+            noPathPriCars.add(priCars.get(i));
+        }
+        saveForbidRoads_ = forbiRoadIds;
+        // 接下来调用schdule方法处理剩下的优先车和普通车。
+        forbidRoads_ = new HashSet<>();
+        startTime = Math.max(endTime, startTime);
+        if(!noPathPriCars.isEmpty()){
+            startTime = Schedule(noPathPriCars, minPath, graph, startTime);
+        }
+        Schedule(noPathCommonCars, minPath, graph, startTime);
+;        return startTime;
     }
  }
 

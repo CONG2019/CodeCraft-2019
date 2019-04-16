@@ -9,6 +9,8 @@ import java.util.HashMap;
 
 public class AllCar {
     public ArrayList<Car> cars_;
+    // 用于记录需要安排路径的车
+    public ArrayList<Car> waitCars_;
     // hashmap存储车
     public HashMap<Integer, Car> carsMap_;
 
@@ -23,6 +25,7 @@ public class AllCar {
     // 通过传入的文件名读入参数
     public void Init(String carFileName, PresetAnswer presetAnswer, boolean isPriority, boolean isAll){
         cars_ = new ArrayList<>();
+        waitCars_ = new ArrayList<>();
         carsMap_ = new HashMap<>();
         carsFrom_ = new HashMap<>();
         carsTo_ = new HashMap<>();
@@ -47,9 +50,9 @@ public class AllCar {
                     String[] car = str.split(",");
                     // 添加新的道路进去
                     Car oneCar = new Car(car);
+                    // 剔除掉预置车
                     if(!isAll){
-                        // 剔除掉预置车
-                        if(presetAnswer.presetCarIds_.contains(oneCar.id_)){
+                        if(oneCar.preset_ == 1){
                             continue;
                         }
                         // 根据是否是优先车辆进行选择
@@ -64,6 +67,7 @@ public class AllCar {
                         maxPlanTime = oneCar.planTime_;
                     }
                     cars_.add(oneCar);
+                    waitCars_.add(oneCar);
                     carsMap_.put(oneCar.id_, oneCar);
                     // 判断是否已经有同一个地方出发的
                     if(carsFrom_.containsKey(oneCar.from_)){

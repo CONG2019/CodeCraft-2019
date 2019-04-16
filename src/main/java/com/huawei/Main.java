@@ -4,9 +4,7 @@ import edu.princeton.cs.algs4.In;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 
-import javax.xml.bind.annotation.adapters.CollapsedStringAdapter;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 
@@ -15,7 +13,10 @@ public class Main {
 
     public static void main(String[] args)
     {
+        // 计算程序的运行时间
+        long startMill = System.currentTimeMillis();
         // 初始化日志
+
         PropertyConfigurator.configure("src/main/resources/log4j.properties");
         if (args.length != 5) {
             logger.error("please input args: inputFilePath, resultFilePath");
@@ -23,7 +24,6 @@ public class Main {
         }
 
         logger.info("Start...");
-
         String carPath = args[0];
         String roadPath = args[1];
         String crossPath = args[2];
@@ -33,6 +33,7 @@ public class Main {
         String answerPath = args[4];
         PresetAnswer presetAnswer = new PresetAnswer();
         presetAnswer.Init(presetAnswerPath);
+
         AllCar allPriorityCar = new AllCar();
         allPriorityCar.Init(carPath, presetAnswer, true, false);
         AllCar allCommonCar = new AllCar();
@@ -43,15 +44,6 @@ public class Main {
         allRoad.Init(roadPath);
         AllCross allCross = new AllCross();
         allCross.Init(crossPath, allRoad);
-        // 判断一下是哪个图？
-        // 图1的crossid包含id是11的
-        if(allCross.crossMap_.containsKey(11)){
-            System.out.print("It's map1!\n");
-        }
-        else{
-            System.out.print("It's map2!\n");
-        }
-        //return ;
         // 测试Graph
         Graph graph = new Graph();
         graph.Init(allCross, allRoad);
@@ -59,34 +51,51 @@ public class Main {
         /*
           初赛方案
          */
-        MinPath bfsSolution = new MinPath(allRoad, allCross);
-        bfsSolution.IsCongestion_Init(presetAnswer, allCar);
-//        bfsSolution.GetPaths(graph);
-        Scheduler schedulerPriority = new Scheduler(allCross, presetAnswer, true);
-        ArrayList<ArrayList<Integer>> allAnswer;
-        // 先求出优先车辆的路径。
-        int startTime = schedulerPriority.Schedule(allPriorityCar, bfsSolution, graph, allRoad, 0);
-        allAnswer = schedulerPriority.answer;
 
-        // 再求普通车辆的路径
-        Scheduler schedulerCommon = new Scheduler(allCross, presetAnswer, false);
-        startTime = schedulerCommon.Schedule(allCommonCar, bfsSolution, graph, allRoad, startTime);
-        allAnswer.addAll(schedulerCommon.answer);
-
+//        Scheduler schedulerPriority = new Scheduler(allCross, presetAnswer, true);
+//        ArrayList<ArrayList<Integer>> allAnswer;
+//        // 先求出优先车辆的路径。
+//        int startTime = schedulerPriority.Schedule(allPriorityCar, bfsSolution, graph,0);
+//        allAnswer = schedulerPriority.answer;
+//
+//        // 再求普通车辆的路径
+//        Scheduler schedulerCommon = new Scheduler(allCross, presetAnswer, false);
+//        startTime = schedulerCommon.Schedule(allCommonCar, bfsSolution, graph, startTime);
+//        allAnswer.addAll(schedulerCommon.answer);
+//
+//        // 打印一下预置车辆的统计信息
+//        Tool.RoadCounts(allAnswer, presetAnswer, allRoad);
         /*
             用一个hashmap保存carid和carid在allanswer中的位置的关系，方便修改answer
          */
+
+
+        /*
+        复赛：
+         */
+        MinPath minPath = new MinPath(allRoad, allCross);
+        minPath.IsCongestion_Init(presetAnswer, allCar);
+        Scheduler scheduler = new Scheduler(allCross, presetAnswer, true);
+        scheduler.InsertPresetCars(presetAnswer, graph, minPath, allRoad, allCar);
+        ArrayList<ArrayList<Integer>> allAnswer = scheduler.answer;
         HashMap<Integer, Integer> CarIdToIndex = new HashMap<>();
         for(int i = 0; i < allAnswer.size(); ++i){
             CarIdToIndex.put(allAnswer.get(i).get(0), i);
         }
 
-
         // 初始化一个用于调整路径的bfs
-        //BFSSolution adjustPath = new BFSSolution(allRoad, bfsSolution.GetIsCongestion(), graph);
+        BFSSolution adjustPath = new BFSSolution(allRoad, minPath.GetIsCongestion(), graph);
         // 初始化一个用于调整路径的dijkstra
-        Dijkstra adjustDij = new Dijkstra(allRoad, bfsSolution.GetIsCongestion());
+        //Dijkstra adjustDij = new Dijkstra(allRoad, minPath.GetIsCongestion());
         //迭代运行判题器
+//        int number = 0;
+//        for (Car car: allCar.cars_
+//             ) {
+//            if(car.priority_ == 1)
+//                number++;
+//        }
+//        System.out.println("number: " + number);
+        
         while(true){
             JudgeApp judgeApp = new JudgeApp(allCar, allRoad, allCross, allAnswer, presetAnswer, graph);
             judgeApp.Init();
@@ -120,26 +129,51 @@ public class Main {
                 }
 
                 // 调用一次bfs进行寻路。
-                //adjustPath.GetPaths(deadLockTime, 1, deadLockRoadId);
-                //HashMap<Integer, HashMap<Integer, ArrayList<Integer>>> newPaths = adjustPath.path_;
+                adjustPath.GetPaths(deadLockTime, 0.5, deadLockRoadId);
+                HashMap<Integer, HashMap<Integer, ArrayList<Integer>>> newPaths = adjustPath.path_;
 
                 // 调用dij求最短路径。
-                adjustDij.GetShortPath(graph, deadLockTime, 1, deadLockRoadId);
-                HashMap<Integer, HashMap<Integer, ArrayList<Integer>>> newPaths = adjustDij.path_;
+//                adjustDij.GetShortPath(graph, deadLockTime, 1, deadLockRoadId);
+//                HashMap<Integer, HashMap<Integer, ArrayList<Integer>>> newPaths = adjustDij.path_;
                 int proportion;
                 int timePreset;
                 int time;
-                if(deadLockTime > 1000){
+                if(deadLockTime > 350){
                     timePreset = 0;
-                    proportion = 3;
-                    time = 10;
+                    proportion = 1;
+                    time = 5;
+                    // 筛选一下第一条车道的车
+                    ArrayList<Integer> carIds = new ArrayList<>(deadLockCarId);
+                    deadLockCarId.clear();
+                    for(Integer id: carIds){
+                        if(allCar.carsMap_.get(id).col_ == 0){
+                            deadLockCarId.add(id);
+                        }
+                    }
                 }
                 else{
                     proportion = 1;
-                    timePreset = 1;
-                    time = -10;
+                    timePreset = 0;
+                    time = 5;
+                    deadLockRoadId.addAll(scheduler.saveForbidRoads_);
                 }
 
+                // 判断一下是否所有车都是预置车，如果是，则调整前五个时间片内的非预置车辆的出发时间。
+//                boolean flag = true;
+//                for(Integer carId: deadLockCarId){
+//                    if(allCar.carsMap_.get(carId).preset_ == 0){
+//                        flag = false;
+//                        break;
+//                    }
+//                }
+//                if(flag){
+//                    deadLockCarId.clear();
+//                    for(ArrayList<Integer> path: allAnswer){
+//                        if(path.get(1) <= deadLockTime && path.get(1) >= (deadLockTime-5)){
+//                            deadLockCarId.add(path.get(1));
+//                        }
+//                    }
+//                }
                 int toChangeCars = deadLockCarId.size() / proportion;
                 // 对每一辆车进行
                 for(int i = 0; i < toChangeCars; ++i){
@@ -157,6 +191,7 @@ public class Main {
                                 toChangePath.add(toChangeCar.id_);
                                 // 还是按照原来的出发时间
                                 toChangePath.add(allAnswer.get(CarIdToIndex.get(toChangeCar.id_)).get(1)+timePreset);
+                                //timePreset = -timePreset;
                                 toChangePath.addAll(newPath);
                                 allAnswer.set(CarIdToIndex.get(toChangeCar.id_), toChangePath);
                             }
@@ -164,12 +199,48 @@ public class Main {
                             else{
                                 ArrayList<Integer> path = allAnswer.get(CarIdToIndex.get(toChangeCar.id_));
                                 path.set(1, Math.max(path.get(1)-time, toChangeCar.planTime_));
+                                //time = -time;
                             }
                         }
                         // 这个种情况也是找不到
                         else{
                             ArrayList<Integer> path = allAnswer.get(CarIdToIndex.get(toChangeCar.id_));
                             path.set(1, Math.max(path.get(1)-time, toChangeCar.planTime_));
+                            //time = - time;
+                        }
+                    }
+                    // 如果是预置车，则仍然可以更改时间
+                    else{
+                        // 找到car
+                        Car toChangeCar = allCar.carsMap_.get(deadLockCarId.get(i));
+                        // 查看是否在路径中
+                        if(newPaths.containsKey(toChangeCar.from_)){
+                            // 是否能找到路
+                            ArrayList<Integer> newPath = newPaths.get(toChangeCar.from_).get(toChangeCar.to_);
+                            if( newPath != null){
+                                // 新建路径并替换
+                                ArrayList<Integer> toChangePath = new ArrayList<>();
+                                toChangePath.add(toChangeCar.id_);
+                                // 还是按照原来的出发时间
+                                // 预置车的index
+                                Integer preIndex = presetAnswer.carIdToIndex.get(toChangeCar.id_);
+                                toChangePath.add(presetAnswer.presetAnswer_.get(preIndex).get(1));
+                                //timePreset = -timePreset;
+                                toChangePath.addAll(newPath);
+                                // 如果不超过最大值，则加入到presetAnswer里面
+                                if(presetAnswer.changePath_.containsKey(toChangeCar.id_)){
+                                    presetAnswer.changePath_.put(toChangeCar.id_, toChangePath);
+                                }
+                                else{
+                                    if(presetAnswer.changePath_.size() < presetAnswer.MAXChange){
+                                        presetAnswer.changePath_.put(toChangeCar.id_, toChangePath);
+                                    }
+                                }
+
+                                // 将presetAnswer里面的路径也更改一下
+                                ArrayList<Integer> newPrePath = new ArrayList<>(toChangePath);
+                                presetAnswer.presetAnswer_.set(preIndex, newPrePath);
+                            }
                         }
                     }
                 }
@@ -185,10 +256,48 @@ public class Main {
             allCross.Init(crossPath, allRoad);
         }
 
+// 更新一下answer
+        for(Integer i: presetAnswer.changePath_.keySet()){
+            allAnswer.add(presetAnswer.changePath_.get(i));
+        }
 
 
-        OutPut.WriteAnswer(allAnswer, answerPath);
         logger.info("End...");
+        long endMill = System.currentTimeMillis();
+
+//        // 如果还有时间，则变换答案，把时间用完
+//        ArrayList<ArrayList<Integer>> result = new ArrayList<>(allAnswer);
+//
+//        while((endMill - startMill) < 800000){
+//            int number = 100;
+//            int newTime = 1;
+//            int count = 0;
+//            for(int i = allAnswer.size() -1; i > allAnswer.size() - number; --i){
+//                allAnswer.get(i).set(1, newTime);
+//                ++count;
+//                if(count == 10){
+//                    count = 0;
+//                    ++newTime;
+//                }
+//            }
+//            allCar = new AllCar();
+//            allCar.Init(carPath, presetAnswer, true, true);
+//            allRoad = new AllRoad();
+//            allRoad.Init(roadPath);
+//            allCross = new AllCross();
+//            allCross.Init(crossPath, allRoad);
+//
+//            JudgeApp judgeApp = new JudgeApp(allCar, allRoad, allCross, allAnswer, presetAnswer, graph);
+//            judgeApp.Init();
+//            // 如果死锁，返回死锁的crossid和roadid还有carid。
+//            ArrayList<Integer> deadlockIds = judgeApp.Judge();
+//            if(deadlockIds != null){
+//
+//            }
+//        }
+//        endMill = System.currentTimeMillis();
+        System.out.println("运行时间：　"+(endMill-startMill)+ "ms");
+        OutPut.WriteAnswer(allAnswer, answerPath);
     }
 
 }

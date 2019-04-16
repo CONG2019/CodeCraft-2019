@@ -19,14 +19,10 @@ public class MinPath {
             IsCongestion.put(road.id_, new HashMap<>());
         }
 
-        if(allCross.crossMap_.containsKey(22)){
-//            System.out.print("It's map1!\n");
-            p = 1.0;
-        }
-        else{
+
 //            System.out.print("It's map2!\n");
-            p = 1.0;
-        }
+            p = 0.8;
+
     }
 
     //保存某时刻路上车的数量，HashMap<RoadID, HashMap<Time, Number>>
@@ -34,19 +30,25 @@ public class MinPath {
     public HashMap<Integer, HashMap<Integer, Integer>> GetIsCongestion(){
         return IsCongestion;
     }
+
+    // 记录每次搜索的时候不能走的路
+    private HashSet<Integer> forbidRoadIds_;
+
+
     //创建一个车队列，优先为没有成功安排路线的车安排路线
     private ArrayList<Car> CarList = new ArrayList<>();
     /*
     根据道路车的数量为每一辆车搜索路劲，当路上车的数量大与设定值是，则认为这条路是不通的，车无法通过，如果经过一次最短路径搜索后车还是没有
     找到去目的地的路径，则返回null，下次优先为这台车搜索路径
      */
-    public ArrayList<Integer> SuitablePath(Graph graph, Car car, int Time){
+    public ArrayList<Integer> SuitablePath(Graph graph, Car car, int Time, HashSet<Integer> forbidRoadIds){
+        forbidRoadIds_ = forbidRoadIds;
 
         // 找出最大的顶点的索引值,最大CrossID
         int maxIndex = Collections.max(graph.GetV());
         // 找出最大的顶点的索引值
         // 这里初始值是false吗？
-        boolean[] marked = new boolean[maxIndex+1];
+        //boolean[] marked = new boolean[maxIndex+1];
         boolean IsFinded = false;
 
         // 记录RoadId的hashmap， <CrossID, Road>这样保存
@@ -55,14 +57,14 @@ public class MinPath {
         LinkedList<Road> queue = new LinkedList<>();
 
         //记录原点到各点的最短距离
-       //int[] MinLength = new int[maxIndex+1];
+       int[] MinLength = new int[maxIndex+1];
         //记录原点到各定点的时间
         int[] MinTime = new int[maxIndex+1];
         for(int i = 0; i<MinTime.length; i++){
-            //MinLength[i] = Integer.MAX_VALUE;
+            MinLength[i] = Integer.MAX_VALUE;
             MinTime[i] = Integer.MAX_VALUE;
         }
-        //MinLength[car.from_] = 0;    //原点到自己的距离为0
+        MinLength[car.from_] = 0;    //原点到自己的距离为0
         MinTime[car.from_] = 0;
 
         // 将起点的邻接边加入到队列
@@ -70,8 +72,8 @@ public class MinPath {
         for (Road road: graph.Adj(car.from_)) {
             queue.add(road);
             //标记原点到第一层定点的距离
-            //MinLength[road.to_] = road.getLength_();
-            marked[road.to_] = true;
+            MinLength[road.to_] = road.getLength_();
+            //marked[road.to_] = true;
             MinTime[road.to_] = Time + (int)((float)road.length_ / Math.min(car.speed_, road.speed_) + 1);
             edgeTo.put(road.to_, road);
         }
@@ -83,6 +85,11 @@ public class MinPath {
             int to = road.to_;
             // 遍历以该点为起点的边
             for (Road outRoad: graph.Adj(to)){
+
+                // 如果该路在禁行驶的集合中，则跳过该条路
+                if(forbidRoadIds_ != null && forbidRoadIds_.contains(outRoad.id_)){
+                    continue;
+                }
                 int tmp_to = outRoad.to_;
                 HashMap<Integer, Integer> RoadCondition = IsCongestion.get(outRoad.id_);
 
@@ -103,17 +110,17 @@ public class MinPath {
 
                 //如果发现更短的路径，则更改路径
                 //第一次访问的定点的路劲是最长的
-                //if(MinLength[tmp_to] > MinLength[outRoad.from_] + outRoad.getLength_()){
+                if(MinLength[tmp_to] > MinLength[outRoad.from_] + outRoad.getLength_()){
                     //如果顶点是第一次访问的话，就需要将顶点推入队列, 或顶点有新的更短的路径
-                if(!marked[tmp_to]){
+                //if(!marked[tmp_to]){
                     queue.add(outRoad);
                     //更改原点到改点的距离
-                    //MinLength[tmp_to] = MinLength[outRoad.from_] + outRoad.getLength_();
+                    MinLength[tmp_to] = MinLength[outRoad.from_] + outRoad.getLength_();
                     MinTime[tmp_to] = MinTime[outRoad.from_] + (int)((float)outRoad.length_ / Math.min(car.speed_, outRoad.speed_) + 1);
                     // 更改路劲RoadId,移除旧路线
                     //不能用replace, 因为如果是新路径的话就不能添加了
-                    //edgeTo.remove(outRoad.to_);
-                    marked[tmp_to] = true;
+                    edgeTo.remove(outRoad.to_);
+                   // marked[tmp_to] = true;
                     edgeTo.put(outRoad.to_, outRoad);
 
                     if(tmp_to == car.to_){
@@ -141,9 +148,9 @@ public class MinPath {
                 //添加路径
                 path.add(edgeTo.get(tmp).id_);
                 tmp = edgeTo.get(tmp).from_;
-                if(tmp == car.from_){
-                    break;
-                }
+//                if(tmp == car.from_){
+//                    break;
+//                }
             }
             //反向后返回路径
             Collections.reverse(path);
